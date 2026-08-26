@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/components/link";
 import { getPrisma } from "@/lib/db";
 import { padTicket } from "@/lib/auth";
 import { Avatar } from "@/components/avatar";

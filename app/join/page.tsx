@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/components/link";
 import { JoinForm } from "@/components/join-form";
 import { OAuthButtons } from "@/components/oauth-buttons";
 import { getSessionUser, rememberNext } from "@/lib/auth";

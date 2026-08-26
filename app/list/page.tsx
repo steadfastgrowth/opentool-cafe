@@ -1,7 +1,7 @@
 import { getSessionUser } from "@/lib/auth";
 import { listRepo } from "@/app/actions";
 import { Stage } from "@/components/stage";
-import Link from "next/link";
+import { Link } from "@/components/link";
 
 export default async function ListPage({
   searchParams,

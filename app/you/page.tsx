@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/components/link";
 import { redirect } from "next/navigation";
 import { getSessionUser, padTicket } from "@/lib/auth";
 import { getPrisma } from "@/lib/db";

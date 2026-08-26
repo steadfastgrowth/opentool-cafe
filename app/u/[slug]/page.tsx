@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { Link } from "@/components/link";
 import { notFound } from "next/navigation";
 import { getPrisma } from "@/lib/db";
 import { getSessionUser, padTicket } from "@/lib/auth";
@@ -11,7 +11,7 @@ function ext(href: string | null, label: string) {
   if (!href) return null;
   const url = href.startsWith("http") ? href : `https://${href}`;
   return (
-    <a className="chip" href={url} rel="noreferrer">
+    <a className="chip" href={url} target="_blank" rel="noreferrer">
       {label}
     </a>
   );

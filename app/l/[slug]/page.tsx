@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/components/link";
 import { notFound } from "next/navigation";
 import { getPrisma } from "@/lib/db";
 import { getSessionUser, padTicket, tagList, githubOwnerFromUrl } from "@/lib/auth";
@@ -76,7 +76,7 @@ export default async function ListingPage({
             Take
           </Link>
         )}
-        <a className="btn btn-ghost" href={`/out/${listing.slug}`} rel="noreferrer">
+        <a className="btn btn-ghost" href={`/out/${listing.slug}`} target="_blank" rel="noreferrer">
           Open tool
         </a>
         {canClaim && !listing.claimed && (

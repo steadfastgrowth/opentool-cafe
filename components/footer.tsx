@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/components/link";
 
 const links = [
   { href: "/about", label: "about" },
@@ -19,7 +19,7 @@ export function Footer() {
             {l.label}
           </Link>
         ))}
-        <a href="https://github.com/steadfastgrowth/opentool-cafe" rel="noreferrer">
+        <a href="https://github.com/steadfastgrowth/opentool-cafe" target="_blank" rel="noreferrer">
           source
         </a>
       </nav>

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/components/link";
 import { notFound } from "next/navigation";
 import { getPrisma } from "@/lib/db";
 import { parseHttpUrl } from "@/lib/urls";
@@ -23,7 +23,7 @@ export default async function LeavePage({
       </p>
       <p className="text-sm text-dim mb-6">{dest.toString()}</p>
       <div className="flex flex-col sm:flex-row gap-2">
-        <a className="btn no-underline" href={dest.toString()} rel="noreferrer">
+        <a className="btn no-underline" href={dest.toString()} target="_blank" rel="noreferrer">
           Continue
         </a>
         <Link className="btn btn-ghost no-underline" href={`/l/${slug}`}>
