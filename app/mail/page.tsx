@@ -2,7 +2,6 @@ import { Link } from "@/components/link";
 import { redirect } from "next/navigation";
 import { getPrisma } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth";
-import { Stage } from "@/components/stage";
 
 function hhmm(d: Date) {
   return d.toISOString().slice(11, 16);
@@ -44,25 +43,32 @@ export default async function MailPage() {
   }
 
   return (
-    <Stage label="Mail" wide={false}>
-      <p className="font-mono text-[11px] text-dim mb-6">$ ls ~/mail</p>
-      {threads.length === 0 ? (
-        <p className="tty text-dim">
-          empty. <Link href="/people">people</Link>
-        </p>
-      ) : (
-        <div className="tty">
-          {threads.map((t) => (
-            <Link key={t.slug} href={`/mail/${t.slug}`} className="tty-row no-underline">
-              <span className="tty-time">{hhmm(t.at)}</span>
-              <span className="tty-who">
-                {t.unread > 0 ? `*@${t.slug}` : `@${t.slug}`}
-              </span>
-              <span className="line-clamp-1">{t.preview}</span>
-            </Link>
-          ))}
+    <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
+      <div className="tty-screen">
+        <div className="tty-bar">
+          <span>mail@opentool.cafe</span>
+          <span>~/{me.slug}</span>
         </div>
-      )}
-    </Stage>
+        <div className="tty-log" id="tty-log">
+          <p className="tty-meta">$ ls ~/mail</p>
+          {threads.length === 0 ? (
+            <p className="tty-meta">
+              0 sessions. <Link href="/people">cd ../people</Link>
+            </p>
+          ) : (
+            threads.map((t) => (
+              <Link key={t.slug} href={`/mail/${t.slug}`} className="tty-row">
+                <span className="tty-time">{hhmm(t.at)}</span>
+                <span className="tty-who">{t.unread > 0 ? `*${t.slug}` : t.slug}</span>
+                <span className="tty-body">{t.preview}</span>
+              </Link>
+            ))
+          )}
+        </div>
+        <p className="tty-status">
+          {me.slug}$ <span className="tty-caret" aria-hidden />
+        </p>
+      </div>
+    </main>
   );
 }

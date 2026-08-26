@@ -3,9 +3,16 @@
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
+function pinBottom() {
+  const log = document.getElementById("tty-log");
+  if (log) log.scrollTop = log.scrollHeight;
+}
+
 export function RefreshMail() {
   const router = useRouter();
   useEffect(() => {
+    pinBottom();
+    document.getElementById("dm-body")?.focus();
     const tick = window.setInterval(() => {
       if (document.hidden) return;
       const note = document.getElementById("dm-body");

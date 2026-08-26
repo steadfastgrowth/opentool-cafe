@@ -3,7 +3,6 @@ import { notFound, redirect } from "next/navigation";
 import { getPrisma } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth";
 import { sendDirectMessage } from "@/app/actions";
-import { Stage } from "@/components/stage";
 import { RefreshMail } from "@/components/refresh-mail";
 
 function hhmm(d: Date) {
@@ -46,36 +45,40 @@ export default async function MailThreadPage({
   });
 
   return (
-    <Stage label="Mail" wide={false}>
+    <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
       <RefreshMail />
-      <p className="font-mono text-[11px] text-dim">
-        $ talk @{person.slug}{" "}
-        <Link href="/mail">exit</Link>
-        {" · "}
-        <Link href={`/u/${person.slug}`}>profile</Link>
-      </p>
-      <div className="tty mt-6 mb-2">
-        {messages.length === 0 && <p className="text-dim">no traffic yet.</p>}
-        {messages.map((m: { id: string; body: string; fromUserId: string; createdAt: Date }) => (
-          <div key={m.id} className="tty-line">
-            <span className="tty-time">{hhmm(m.createdAt)}</span>
-            <span className="tty-who">{m.fromUserId === me.id ? "you>" : `@${person.slug}>`}</span>
-            <span>{m.body}</span>
-          </div>
-        ))}
+      <div className="tty-screen">
+        <div className="tty-bar">
+          <span>
+            mail — {me.slug} ↔ {person.slug}
+          </span>
+          <span>
+            <Link href="/mail">exit</Link>
+            {"  "}
+            <Link href={`/u/${person.slug}`}>whois</Link>
+          </span>
+        </div>
+        <div className="tty-log" id="tty-log">
+          <p className="tty-meta">$ talk {person.slug}</p>
+          {messages.length === 0 && <p className="tty-meta">no traffic yet.</p>}
+          {messages.map((m: { id: string; body: string; fromUserId: string; createdAt: Date }) => (
+            <p key={m.id} className="tty-line">
+              <span className="tty-time">{hhmm(m.createdAt)}</span>
+              <span className="tty-who">{m.fromUserId === me.id ? `${me.slug}>` : `${person.slug}>`}</span>
+              <span className="tty-body">{m.body}</span>
+            </p>
+          ))}
+          {q.err === "fields" && <p className="tty-meta">need a line, under 2000.</p>}
+          {q.err === "rate" && <p className="tty-meta">rate limit. wait.</p>}
+        </div>
+        <form action={sendDirectMessage} className="tty-prompt">
+          <input type="hidden" name="slug" value={person.slug} />
+          <label className="tty-who" htmlFor="dm-body">
+            {me.slug}$
+          </label>
+          <input id="dm-body" name="body" className="tty-input" required maxLength={2000} autoComplete="off" spellCheck={false} />
+        </form>
       </div>
-      {q.err === "fields" && <p className="tty mb-2">need a line, under 2000.</p>}
-      {q.err === "rate" && <p className="tty mb-2">rate limit. wait.</p>}
-      <form action={sendDirectMessage} className="tty-prompt">
-        <input type="hidden" name="slug" value={person.slug} />
-        <label className="tty-who shrink-0" htmlFor="dm-body">
-          you$
-        </label>
-        <input id="dm-body" name="body" className="field" required maxLength={2000} autoComplete="off" />
-        <button className="btn btn-ghost" type="submit">
-          enter
-        </button>
-      </form>
-    </Stage>
+    </main>
   );
 }
