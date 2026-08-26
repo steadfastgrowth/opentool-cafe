@@ -20,8 +20,8 @@ export default function TermsPage() {
 
       <h2 className="display text-2xl mb-2">Your account</h2>
       <p className="text-dim mb-6 leading-relaxed">
-        You must be 18 or older. You are responsible for what you post, list, and link. Do not share your password.
-        GitHub login is between you and GitHub.
+        You are responsible for what you post, list, and link. Do not share your password. GitHub login is between
+        you and GitHub.
       </p>
 
       <h2 className="display text-2xl mb-2">Your content</h2>

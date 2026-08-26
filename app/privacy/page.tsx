@@ -44,8 +44,8 @@ export default function PrivacyPage() {
 
       <h2 className="display text-2xl mb-2">Kids</h2>
       <p className="text-dim mb-6 leading-relaxed">
-        The cafe is for adults (18+). We do not knowingly collect data from children. Sexual content and any
-        exploitation of minors is banned; see the <Link href="/rules">house rules</Link>.
+        We do not knowingly collect personal data from children under 13. Sexual content and any exploitation of
+        minors is banned; see the <Link href="/rules">house rules</Link>.
       </p>
 
       <p className="font-mono text-[12px] text-dim">Effective 26 Aug 2026. We can update this page.</p>
