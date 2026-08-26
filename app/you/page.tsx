@@ -50,8 +50,11 @@ export default async function YouPage({
           <Avatar name={me.name || me.slug} src={me.avatarUrl} size={112} />
           <div>
             <h1 className="display text-4xl">{me.name || me.slug}</h1>
-            <p className="text-sm text-dim">
-              <Link href={`/u/${me.slug}`}>Public profile</Link>
+            <p className="font-mono text-dim mt-1">@{me.slug}</p>
+            <p className="mt-3 flex flex-wrap gap-2">
+              <Link href={`/u/${me.slug}`} className="btn sm:w-auto no-underline">
+                View public profile
+              </Link>
             </p>
           </div>
         </div>
@@ -65,12 +68,13 @@ export default async function YouPage({
       {q.err === "photo" && <p>Photo needs to be a jpg/png/webp under 3MB.</p>}
 
       <section className="ticket p-6">
-        <h2 className="display text-xl mb-4">Cup + photo</h2>
-        <p className="text-sm text-dim mb-4">
-          Everyone gets an 8-bit cup with their name. Add a photo if you want a face too.
-        </p>
+        <h2 className="display text-xl mb-4">Photo</h2>
+        <p className="text-sm text-dim mb-4">Optional. Initials show until you add one.</p>
         <form action={uploadAvatar} className="space-y-3">
-          <input name="photo" type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="field" />
+          <label className="lbl" htmlFor="you-photo">
+            photo
+          </label>
+          <input id="you-photo" name="photo" type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="field" />
           <button className="btn sm:w-auto" type="submit">
             Upload photo
           </button>
@@ -81,56 +85,94 @@ export default async function YouPage({
         <h2 className="display text-xl mb-4">Profile</h2>
         <form action={saveProfile} className="grid gap-3">
           <div>
-            <label className="lbl">name</label>
-            <input name="name" className="field" defaultValue={me.name || ""} />
+            <label className="lbl" htmlFor="you-name">
+              name
+            </label>
+            <input id="you-name" name="name" className="field" defaultValue={me.name || ""} autoComplete="name" />
           </div>
           <div>
-            <label className="lbl">slug</label>
-            <input name="slug" className="field" defaultValue={me.slug} />
+            <label className="lbl" htmlFor="you-slug">
+              slug
+            </label>
+            <input id="you-slug" name="slug" className="field" defaultValue={me.slug} />
           </div>
           <div>
-            <label className="lbl">one line</label>
-            <input name="bio" className="field" defaultValue={me.bio || ""} />
+            <label className="lbl" htmlFor="you-bio">
+              one line
+            </label>
+            <input id="you-bio" name="bio" className="field" defaultValue={me.bio || ""} />
           </div>
           <div>
-            <label className="lbl">I can help with</label>
-            <input name="offering" className="field" defaultValue={me.offering || ""} placeholder="Next.js, tax appeals, landing pages" />
+            <label className="lbl" htmlFor="you-offering">
+              I can help with
+            </label>
+            <input
+              id="you-offering"
+              name="offering"
+              className="field"
+              defaultValue={me.offering || ""}
+              placeholder="Next.js, tax appeals, landing pages"
+            />
           </div>
           <div>
-            <label className="lbl">looking for</label>
-            <input name="lookingFor" className="field" defaultValue={me.lookingFor || ""} placeholder="a designer, a cofounder, weekend help" />
+            <label className="lbl" htmlFor="you-looking">
+              looking for
+            </label>
+            <input
+              id="you-looking"
+              name="lookingFor"
+              className="field"
+              defaultValue={me.lookingFor || ""}
+              placeholder="a designer, a cofounder, weekend help"
+            />
           </div>
           <div>
-            <label className="lbl">skills</label>
-            <input name="skills" className="field" defaultValue={me.skills || ""} placeholder="rust, prisma, copy" />
+            <label className="lbl" htmlFor="you-skills">
+              skills
+            </label>
+            <input id="you-skills" name="skills" className="field" defaultValue={me.skills || ""} placeholder="rust, prisma, copy" />
           </div>
           <div>
-            <label className="lbl">phone</label>
-            <input name="phone" className="field" defaultValue={me.phone || ""} />
+            <label className="lbl" htmlFor="you-phone">
+              phone
+            </label>
+            <input id="you-phone" name="phone" className="field" defaultValue={me.phone || ""} autoComplete="tel" />
           </div>
           <div>
-            <label className="lbl">github</label>
-            <input name="github" className="field" defaultValue={me.github || ""} placeholder="https://github.com/you" />
+            <label className="lbl" htmlFor="you-github">
+              github
+            </label>
+            <input id="you-github" name="github" className="field" defaultValue={me.github || ""} placeholder="https://github.com/you" />
           </div>
           <div>
-            <label className="lbl">x</label>
-            <input name="x" className="field" defaultValue={me.x || ""} />
+            <label className="lbl" htmlFor="you-x">
+              x
+            </label>
+            <input id="you-x" name="x" className="field" defaultValue={me.x || ""} />
           </div>
           <div>
-            <label className="lbl">hugging face</label>
-            <input name="huggingface" className="field" defaultValue={me.huggingface || ""} />
+            <label className="lbl" htmlFor="you-hf">
+              hugging face
+            </label>
+            <input id="you-hf" name="huggingface" className="field" defaultValue={me.huggingface || ""} />
           </div>
           <div>
-            <label className="lbl">linkedin</label>
-            <input name="linkedin" className="field" defaultValue={me.linkedin || ""} />
+            <label className="lbl" htmlFor="you-li">
+              linkedin
+            </label>
+            <input id="you-li" name="linkedin" className="field" defaultValue={me.linkedin || ""} />
           </div>
           <div>
-            <label className="lbl">site</label>
-            <input name="website" className="field" defaultValue={me.website || ""} />
+            <label className="lbl" htmlFor="you-site">
+              site
+            </label>
+            <input id="you-site" name="website" className="field" defaultValue={me.website || ""} />
           </div>
           <div>
-            <label className="lbl">calendar</label>
-            <input name="calendarUrl" className="field" defaultValue={me.calendarUrl || ""} />
+            <label className="lbl" htmlFor="you-cal">
+              calendar
+            </label>
+            <input id="you-cal" name="calendarUrl" className="field" defaultValue={me.calendarUrl || ""} />
           </div>
           <label className="flex gap-2 text-sm">
             <input type="checkbox" name="takesMeetings" defaultChecked={me.takesMeetings} />

@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getPrisma } from "@/lib/db";
 import { newToken, setSessionCookie, uniqueUserSlug } from "@/lib/auth";
 import { appUrl } from "@/lib/config";
+import { track } from "@/lib/track";
 
 const STATE = "oauth_state";
 
@@ -95,6 +96,7 @@ export async function finishGithub(req: NextRequest) {
     githubHandle: user.login,
     avatarUrl: user.avatar_url || null,
   });
+  await track("join_github", { path: "/auth/github/callback" });
   return NextResponse.redirect(new URL("/you", origin));
 }
 

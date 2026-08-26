@@ -1,5 +1,3 @@
-import { CoffeeCup } from "./coffee-cup";
-
 export function Avatar({
   name,
   src,
@@ -9,20 +7,33 @@ export function Avatar({
   src?: string | null;
   size?: number;
 }) {
+  const initials = name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase() || "")
+    .join("");
+
   if (src) {
     return (
-      <div className="inline-flex flex-col items-center gap-1">
-        <img
-          src={src}
-          alt={name}
-          width={size}
-          height={size}
-          className="object-cover border-2 border-paper"
-          style={{ width: size, height: size, imageRendering: "auto" }}
-        />
-        <CoffeeCup name={name} size={Math.max(48, Math.round(size * 0.55))} />
-      </div>
+      <img
+        src={src}
+        alt={name}
+        width={size}
+        height={size}
+        className="object-cover border-2 border-paper shrink-0"
+        style={{ width: size, height: size }}
+      />
     );
   }
-  return <CoffeeCup name={name} size={size} />;
+
+  return (
+    <div
+      className="inline-flex items-center justify-center border-2 border-paper bg-foam shrink-0 font-mono"
+      style={{ width: size, height: size, fontSize: Math.max(12, Math.round(size * 0.32)) }}
+      aria-hidden
+    >
+      {initials || "?"}
+    </div>
+  );
 }

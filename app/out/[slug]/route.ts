@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPrisma } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth";
+import { track } from "@/lib/track";
 
 export async function GET(
   req: NextRequest,
@@ -20,5 +21,6 @@ export async function GET(
       referrer: req.headers.get("referer"),
     },
   });
+  await track("outbound", { path: `/out/${slug}`, listingId: listing.id, userId: me?.id });
   return NextResponse.redirect(listing.officialUrl, { status: 302 });
 }

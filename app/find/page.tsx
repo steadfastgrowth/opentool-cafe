@@ -21,7 +21,7 @@ export default async function FindPage({
     <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8 boot">
       <div className="stage">
         <div className="receipt">
-          <span className="dots flex gap-1">
+          <span className="dots flex gap-1" aria-hidden="true">
             <span />
             <span />
             <span />
@@ -30,8 +30,11 @@ export default async function FindPage({
         </div>
         <div className="p-4 sm:p-10">
           <h1 className="display text-4xl mb-6">The menu</h1>
-          <form className="flex flex-col sm:flex-row gap-3 mb-4 max-w-lg">
-            <input name="q" defaultValue={q || ""} className="field" placeholder="Search" />
+          <form className="flex flex-col sm:flex-row gap-3 mb-4 max-w-lg" role="search">
+            <label className="sr-only" htmlFor="menu-q">
+              Search the menu
+            </label>
+            <input id="menu-q" name="q" defaultValue={q || ""} className="field" placeholder="Search" />
             <button className="btn sm:w-auto" type="submit">
               Search
             </button>

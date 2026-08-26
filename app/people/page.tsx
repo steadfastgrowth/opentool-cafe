@@ -11,7 +11,7 @@ export default async function PeoplePage() {
   return (
     <main className="max-w-3xl mx-auto px-5 py-10">
       <h1 className="display text-4xl mb-6">People</h1>
-      {people.length === 0 && <p className="text-dim">Empty room. Join and get a cup.</p>}
+      {people.length === 0 && <p className="text-dim">Empty room.</p>}
       <ul className="space-y-3">
         {people.map((p) => (
           <li key={p.id} className="ticket p-4">

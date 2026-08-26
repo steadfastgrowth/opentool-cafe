@@ -40,6 +40,8 @@ model User {
   meetingsTo   MeetingRequest[]  @relation("MeetTo")
   tips         Tip[]
   posts        Post[]
+  following    Follow[] @relation("Following")
+  followers    Follow[] @relation("Followers")
 }
 
 model Session {
@@ -134,5 +136,25 @@ model Post {
   title     String
   body      String
   tags      String   @default("")
+  createdAt DateTime @default(now())
+}
+
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+  follower    User     @relation("Following", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("Followers", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+}
+
+model Event {
+  id        String   @id @default(cuid())
+  name      String
+  path      String?
+  listingId String?
+  userId    String?
   createdAt DateTime @default(now())
 }

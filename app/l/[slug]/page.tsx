@@ -76,6 +76,9 @@ export default async function ListingPage({
             Take
           </Link>
         )}
+        <a className="btn btn-ghost" href={`/out/${listing.slug}`} rel="noreferrer">
+          Open tool
+        </a>
         {canClaim && !listing.claimed && (
           <form action={claimListing.bind(null, listing.id)}>
             <button className="btn btn-ghost" type="submit">
@@ -96,11 +99,14 @@ export default async function ListingPage({
           <h2 className="display text-xl">Book a meeting</h2>
           <input type="hidden" name="toUserId" value={listing.owner.id} />
           <input type="hidden" name="listingId" value={listing.id} />
-          <select name="kind" className="field">
+          <select name="kind" className="field" id="meet-kind" aria-label="Meeting type">
             <option value="buy">Need help installing</option>
             <option value="sell">Offer to install</option>
           </select>
-          <textarea name="note" className="field" rows={3} placeholder="Note" />
+          <label className="lbl" htmlFor="meet-note">
+            note
+          </label>
+          <textarea id="meet-note" name="note" className="field" rows={3} />
           <button className="btn" type="submit">
             Book
           </button>

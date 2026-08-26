@@ -1,21 +1,22 @@
 import Link from "next/link";
 import { getPrisma } from "@/lib/db";
-import { Clock } from "./clock";
+import { Avatar } from "@/components/avatar";
 
 const links = [
-  { href: "/", label: "cafe" },
   { href: "/board", label: "board" },
-  { href: "/list", label: "makers" },
-  { href: "/find", label: "menu" },
-  { href: "/people", label: "people" },
+  { href: "/tip", label: "tip" },
 ] as const;
 
 export async function Chrome({
   signedIn,
   slug,
+  avatarUrl,
+  name,
 }: {
   signedIn: boolean;
   slug: string | null;
+  avatarUrl?: string | null;
+  name?: string | null;
 }) {
   const prisma = await getPrisma();
   const board = await prisma.listing.findMany({
@@ -23,53 +24,69 @@ export async function Chrome({
     select: { name: true, number: true },
     take: 12,
   });
-  const items = [
-    "now serving",
-    ...board.map((b) => `#${String(b.number).padStart(3, "0")} ${b.name}`),
-  ];
+  const items = ["now serving", ...board.map((b) => `#${String(b.number).padStart(3, "0")} ${b.name}`)];
   const loop = [...items, ...items];
-  const youHref = signedIn ? "/you" : "/join";
-  const youLabel = signedIn ? slug || "you" : "you";
   return (
     <header className="sticky top-0 z-40">
-      <div className="px-4 sm:px-5 pt-[max(0.65rem,env(safe-area-inset-top))] pb-3 flex items-center justify-between gap-3 bg-[#fff8ea]">
-        <Link href="/" className="flex items-end gap-2 no-underline min-w-0">
-          <span className="flex flex-col items-center shrink-0" aria-hidden>
-            <span className="steam">
-              <b />
-              <b />
-              <b />
-            </span>
+      <div className="nav-bar">
+        <Link href="/" className="nav-brand">
+          <span className="nav-mark" aria-hidden="true">
             <span className="cup" />
           </span>
-          <span className="wordmark text-[14px] sm:text-[17px] leading-none pb-0.5 truncate">
-            opentool.cafe
-          </span>
+          <span className="wordmark">opentool.cafe</span>
         </Link>
-        <nav className="hidden sm:flex gap-4 items-center text-dim shrink-0">
-          {links.map((l) => (
-            <Link key={l.href} className="nav-link" href={l.href}>
-              {l.label}
-            </Link>
-          ))}
-          <Link className="nav-link" href={youHref}>
-            {youLabel}
-          </Link>
-          <Clock />
-        </nav>
-        <details className="sm:hidden relative">
-          <summary className="mobile-menu-btn">menu</summary>
-          <div className="mobile-drawer">
+
+        <form action="/search" role="search" className="nav-search-wrap">
+          <label className="sr-only" htmlFor="nav-q">
+            Search
+          </label>
+          <input id="nav-q" name="q" className="nav-search" placeholder="Search people, tools, posts" />
+        </form>
+
+        <div className="nav-end">
+          <nav className="nav-links" aria-label="Primary">
             {links.map((l) => (
-              <Link key={l.href} className="nav-link py-2" href={l.href}>
+              <Link key={l.href} className={l.href === "/tip" ? "nav-link tip-nav" : "nav-link"} href={l.href}>
                 {l.label}
               </Link>
             ))}
-            <Link className="nav-link py-2" href={youHref}>
-              {youLabel}
+          </nav>
+          {signedIn && slug ? (
+            <Link href={`/u/${slug}`} className="nav-avatar" aria-label="Your public profile">
+              <Avatar name={name || slug} src={avatarUrl} size={32} />
             </Link>
-          </div>
-        </details>
+          ) : (
+            <Link className="nav-link" href="/join">
+              join
+            </Link>
+          )}
+          <details className="nav-more">
+            <summary className="mobile-menu-btn" aria-label="Open menu">
+              menu
+            </summary>
+            <div className="mobile-drawer">
+              <nav className="flex flex-col" aria-label="Mobile">
+                {links.map((l) => (
+                  <Link key={l.href} className="nav-link py-2" href={l.href}>
+                    {l.label}
+                  </Link>
+                ))}
+                <Link className="nav-link py-2" href="/search">
+                  search
+                </Link>
+                {signedIn && slug ? (
+                  <Link className="nav-link py-2" href="/you">
+                    edit profile
+                  </Link>
+                ) : (
+                  <Link className="nav-link py-2" href="/join">
+                    join
+                  </Link>
+                )}
+              </nav>
+            </div>
+          </details>
+        </div>
       </div>
       <div className="marquee" aria-hidden>
         <div className="marquee-track">

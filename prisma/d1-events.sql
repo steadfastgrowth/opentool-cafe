@@ -1,0 +1,10 @@
+CREATE TABLE IF NOT EXISTS Event (
+  id TEXT PRIMARY KEY NOT NULL,
+  name TEXT NOT NULL,
+  path TEXT,
+  listingId TEXT,
+  userId TEXT,
+  createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS Event_name_idx ON Event(name);
+CREATE INDEX IF NOT EXISTS Event_createdAt_idx ON Event(createdAt);

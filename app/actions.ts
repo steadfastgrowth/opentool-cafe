@@ -14,6 +14,7 @@ import {
 } from "@/lib/auth";
 import { sendLoginEmail } from "@/lib/mail";
 import { hashPassword, sixDigitCode, verifyPassword } from "@/lib/password";
+import { track } from "@/lib/track";
 
 async function openSession(userId: string) {
   const prisma = await getPrisma();
@@ -102,6 +103,7 @@ export async function consumeMagic(token: string, optIn: boolean) {
     });
   }
   await openSession(user.id);
+  await track("join_code", { path: "/join", userId: user.id });
   redirect("/you");
 }
 
@@ -139,6 +141,7 @@ export async function registerWithPassword(formData: FormData) {
     });
   }
   await openSession(user.id);
+  await track("join_password", { path: "/join", userId: user.id });
   redirect("/you");
 }
 
@@ -154,6 +157,7 @@ export async function loginWithPassword(formData: FormData) {
     redirect("/join?err=login");
   }
   await openSession(user.id);
+  await track("join_password", { path: "/join", userId: user.id });
   redirect("/you");
 }
 
@@ -294,6 +298,7 @@ export async function takeListing(listingId: string) {
   });
   revalidatePath(`/l/${listing.slug}`);
   revalidatePath("/you");
+  await track("take", { path: `/l/${listing.slug}`, listingId: listing.id, userId: me.id });
   redirect(`/out/${listing.slug}`);
 }
 
@@ -316,6 +321,7 @@ export async function bookMeeting(formData: FormData) {
     },
   });
   revalidatePath("/you");
+  await track("meet", { path: "/you", listingId, userId: me.id });
   redirect("/you?ok=meet");
 }
 
@@ -417,4 +423,24 @@ export async function leaveTip(formData: FormData) {
     if (session.url) redirect(session.url);
   }
   redirect("/tip?ok=1");
+}
+
+export async function toggleFollow(formData: FormData) {
+  const prisma = await getPrisma();
+  const me = await getSessionUser();
+  if (!me) redirect("/join");
+  const slug = String(formData.get("slug") || "");
+  const person = await prisma.user.findUnique({ where: { slug } });
+  if (!person || person.id === me.id) redirect(slug ? `/u/${slug}` : "/search");
+  const existing = await prisma.follow.findUnique({
+    where: { followerId_followingId: { followerId: me.id, followingId: person.id } },
+  });
+  if (existing) {
+    await prisma.follow.delete({ where: { id: existing.id } });
+  } else {
+    await prisma.follow.create({ data: { followerId: me.id, followingId: person.id } });
+  }
+  revalidatePath(`/u/${slug}`);
+  revalidatePath("/board");
+  redirect(`/u/${slug}`);
 }

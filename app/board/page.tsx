@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getPrisma } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth";
-import { CoffeeCup } from "@/components/coffee-cup";
+import { Avatar } from "@/components/avatar";
 
 const KINDS = [
   { id: "all", label: "all" },
@@ -62,7 +62,7 @@ export default async function BoardPage({
           <li key={p.id} className="ticket p-4">
             <Link href={`/board/${p.id}`} className="block no-underline">
               <div className="flex gap-3">
-                <CoffeeCup name={p.author.name || p.author.slug} size={56} />
+                <Avatar name={p.author.name || p.author.slug} src={p.author.avatarUrl} size={56} />
                 <div className="min-w-0">
                   <p className="font-mono text-[11px] text-mark uppercase tracking-widest">{p.kind}</p>
                   <h2 className="display text-xl">{p.title}</h2>
