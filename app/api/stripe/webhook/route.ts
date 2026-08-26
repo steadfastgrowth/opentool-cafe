@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPrisma } from "@/lib/db";
 import { verifyStripeSignature } from "@/lib/stripe-webhook";
+import { notifyDesk } from "@/lib/notify";
 
 export async function POST(req: NextRequest) {
   const secret = (process.env.STRIPE_WEBHOOK_SECRET || "").trim();
@@ -24,6 +25,7 @@ export async function POST(req: NextRequest) {
         where: { id: tipId },
         data: { status: "paid", stripeId: obj?.id || undefined },
       });
+      await notifyDesk("Cafe: tip paid", `tip ${tipId} marked paid.`);
     } else if (obj?.id) {
       await prisma.tip.updateMany({
         where: { stripeId: obj.id },

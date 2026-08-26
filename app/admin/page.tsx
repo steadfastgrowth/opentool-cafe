@@ -3,6 +3,9 @@ import { redirect } from "next/navigation";
 import { adminPasswordOk, isAdmin, setAdminCookie } from "@/lib/admin";
 import { clientIp } from "@/lib/request";
 import { rateLimit, WINDOW_15M } from "@/lib/rate-limit";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 async function login(formData: FormData) {
   "use server";

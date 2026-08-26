@@ -5,6 +5,7 @@ import { newToken, setSessionCookie, uniqueUserSlug } from "@/lib/auth";
 import { appUrl } from "@/lib/config";
 import { track } from "@/lib/track";
 import { cookieSecure } from "@/lib/request";
+import { notifyDesk } from "@/lib/notify";
 
 const STATE = "oauth_state";
 
@@ -115,6 +116,10 @@ async function upsertOAuthUser(input: {
         avatarUrl: input.avatarUrl || undefined,
       },
     });
+    await notifyDesk(
+      "Cafe: new regular (GitHub)",
+      `${user.email} · @${user.slug} · ${user.githubHandle || ""}\nhttps://opentool.cafe/u/${user.slug}`,
+    );
   } else {
     user = await prisma.user.update({
       where: { id: user.id },

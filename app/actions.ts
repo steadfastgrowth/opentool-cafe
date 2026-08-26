@@ -18,6 +18,7 @@ import { track } from "@/lib/track";
 import { clientIp } from "@/lib/request";
 import { rateLimit, WINDOW_15M } from "@/lib/rate-limit";
 import { parseHttpUrl } from "@/lib/urls";
+import { notifyDesk } from "@/lib/notify";
 
 async function openSession(userId: string) {
   const prisma = await getPrisma();
@@ -106,6 +107,10 @@ export async function consumeMagic(token: string, _ignoredOpt?: boolean) {
         optInBuilders: useOpt,
       },
     });
+    await notifyDesk(
+      "Cafe: new regular (email code)",
+      `${user.email} · @${user.slug}\nhttps://opentool.cafe/u/${user.slug}`,
+    );
   } else if (useOpt && !user.optInBuilders) {
     user = await prisma.user.update({
       where: { id: user.id },
@@ -144,6 +149,10 @@ export async function registerWithPassword(formData: FormData) {
       optInBuilders,
     },
   });
+  await notifyDesk(
+    "Cafe: new regular (password)",
+    `${user.email} · @${user.slug}\nhttps://opentool.cafe/u/${user.slug}`,
+  );
   await openSession(user.id);
   await track("join_password", { path: "/join", userId: user.id });
   redirect("/you");

@@ -5,7 +5,8 @@
   "compatibility_date": "2025-09-23",
   "compatibility_flags": ["nodejs_compat", "nodejs_compat_populate_process_env"],
   "vars": {
-    "APP_URL": "https://opentool.cafe"
+    "APP_URL": "https://opentool.cafe",
+    "NOTIFY_EMAIL": "john@steadfastgrowth.io"
   },
   "assets": {
     "directory": ".open-next/assets",
