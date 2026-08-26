@@ -30,6 +30,12 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
+# prisma init junk
+.agents/
+.claude/
+.windsurf/
+skills-lock.json
+
 # env files
 .env
 .env.local
