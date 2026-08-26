@@ -13,7 +13,7 @@ import {
   slugify,
   uniqueUserSlug,
 } from "@/lib/auth";
-import { sendLoginEmail } from "@/lib/mail";
+import { sendLeadNotice, sendLoginEmail, sendMeetingNotice } from "@/lib/mail";
 import { hashPassword, sixDigitCode, verifyPassword } from "@/lib/password";
 import { track } from "@/lib/track";
 import { clientIp } from "@/lib/request";
@@ -318,9 +318,12 @@ export async function takeListing(listingId: string) {
   const prisma = await getPrisma();
   const me = await getSessionUser();
   if (!me) redirect("/join");
-  const listing = await prisma.listing.findUnique({ where: { id: listingId } });
+  const listing = await prisma.listing.findUnique({
+    where: { id: listingId },
+    include: { owner: true },
+  });
   if (!listing) redirect("/find");
-  await prisma.take.upsert({
+  const take = await prisma.take.upsert({
     where: { listingId_userId: { listingId, userId: me.id } },
     update: { optedIn: me.optInBuilders },
     create: {
@@ -329,6 +332,20 @@ export async function takeListing(listingId: string) {
       optedIn: me.optInBuilders,
     },
   });
+  if (take.optedIn && listing.owner?.email && listing.owner.id !== me.id) {
+    try {
+      await sendLeadNotice({
+        to: listing.owner.email,
+        listingName: listing.name,
+        listingSlug: listing.slug,
+        fromName: me.name || me.slug,
+        fromSlug: me.slug,
+        fromEmail: me.email,
+      });
+    } catch {
+      // take still counts if mail fails
+    }
+  }
   revalidatePath(`/l/${listing.slug}`);
   revalidatePath("/you");
   await track("take", { path: `/l/${listing.slug}`, listingId: listing.id, userId: me.id });
@@ -344,6 +361,11 @@ export async function bookMeeting(formData: FormData) {
   const kind = String(formData.get("kind") || "buy");
   const note = String(formData.get("note") || "").trim() || null;
   if (!toUserId || toUserId === me.id) redirect("/you");
+  const host = await prisma.user.findUnique({ where: { id: toUserId } });
+  if (!host) redirect("/you");
+  const listing = listingId
+    ? await prisma.listing.findUnique({ where: { id: listingId } })
+    : null;
   await prisma.meetingRequest.create({
     data: {
       fromUserId: me.id,
@@ -353,6 +375,18 @@ export async function bookMeeting(formData: FormData) {
       note,
     },
   });
+  try {
+    await sendMeetingNotice({
+      to: host.email,
+      kind: kind === "sell" ? "sell" : "buy",
+      fromName: me.name || me.slug,
+      fromSlug: me.slug,
+      listingName: listing?.name,
+      note,
+    });
+  } catch {
+    // request still counts if mail fails
+  }
   revalidatePath("/you");
   await track("meet", { path: "/you", listingId, userId: me.id });
   redirect("/you?ok=meet");
