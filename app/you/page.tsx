@@ -1,0 +1,255 @@
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { getSessionUser, padTicket } from "@/lib/auth";
+import { getPrisma } from "@/lib/db";
+import { logout, saveProfile, uploadAvatar } from "@/app/actions";
+import { Avatar } from "@/components/avatar";
+
+export default async function YouPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ ok?: string; err?: string }>;
+}) {
+  const prisma = await getPrisma();
+  const me = await getSessionUser();
+  if (!me) redirect("/join");
+  const q = await searchParams;
+  const takes = await prisma.take.findMany({
+    where: { userId: me.id },
+    include: { listing: true },
+    orderBy: { createdAt: "desc" },
+  });
+  const listed = await prisma.listing.findMany({
+    where: { ownerId: me.id },
+    orderBy: { number: "asc" },
+  });
+  const inbox = await prisma.take.findMany({
+    where: { listing: { ownerId: me.id }, optedIn: true },
+    include: { user: true, listing: true },
+    orderBy: { createdAt: "desc" },
+  });
+  const meetingsIn = await prisma.meetingRequest.findMany({
+    where: { toUserId: me.id },
+    include: { fromUser: true, listing: true },
+    orderBy: { createdAt: "desc" },
+  });
+  const meetingsOut = await prisma.meetingRequest.findMany({
+    where: { fromUserId: me.id },
+    include: { toUser: true, listing: true },
+    orderBy: { createdAt: "desc" },
+  });
+  const posts = await prisma.post.findMany({
+    where: { authorId: me.id },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return (
+    <main className="max-w-3xl mx-auto px-5 py-10 space-y-10">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+        <div className="flex gap-4 items-start">
+          <Avatar name={me.name || me.slug} src={me.avatarUrl} size={112} />
+          <div>
+            <h1 className="display text-4xl">{me.name || me.slug}</h1>
+            <p className="text-sm text-dim">
+              <Link href={`/u/${me.slug}`}>Public profile</Link>
+            </p>
+          </div>
+        </div>
+        <form action={logout} className="sm:shrink-0">
+          <button className="btn btn-ghost sm:w-auto" type="submit">
+            Log out
+          </button>
+        </form>
+      </div>
+      {q.ok === "meet" && <p>Meeting request stored.</p>}
+      {q.err === "photo" && <p>Photo needs to be a jpg/png/webp under 3MB.</p>}
+
+      <section className="ticket p-6">
+        <h2 className="display text-xl mb-4">Cup + photo</h2>
+        <p className="text-sm text-dim mb-4">
+          Everyone gets an 8-bit cup with their name. Add a photo if you want a face too.
+        </p>
+        <form action={uploadAvatar} className="space-y-3">
+          <input name="photo" type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="field" />
+          <button className="btn sm:w-auto" type="submit">
+            Upload photo
+          </button>
+        </form>
+      </section>
+
+      <section className="ticket p-6">
+        <h2 className="display text-xl mb-4">Profile</h2>
+        <form action={saveProfile} className="grid gap-3">
+          <div>
+            <label className="lbl">name</label>
+            <input name="name" className="field" defaultValue={me.name || ""} />
+          </div>
+          <div>
+            <label className="lbl">slug</label>
+            <input name="slug" className="field" defaultValue={me.slug} />
+          </div>
+          <div>
+            <label className="lbl">one line</label>
+            <input name="bio" className="field" defaultValue={me.bio || ""} />
+          </div>
+          <div>
+            <label className="lbl">I can help with</label>
+            <input name="offering" className="field" defaultValue={me.offering || ""} placeholder="Next.js, tax appeals, landing pages" />
+          </div>
+          <div>
+            <label className="lbl">looking for</label>
+            <input name="lookingFor" className="field" defaultValue={me.lookingFor || ""} placeholder="a designer, a cofounder, weekend help" />
+          </div>
+          <div>
+            <label className="lbl">skills</label>
+            <input name="skills" className="field" defaultValue={me.skills || ""} placeholder="rust, prisma, copy" />
+          </div>
+          <div>
+            <label className="lbl">phone</label>
+            <input name="phone" className="field" defaultValue={me.phone || ""} />
+          </div>
+          <div>
+            <label className="lbl">github</label>
+            <input name="github" className="field" defaultValue={me.github || ""} placeholder="https://github.com/you" />
+          </div>
+          <div>
+            <label className="lbl">x</label>
+            <input name="x" className="field" defaultValue={me.x || ""} />
+          </div>
+          <div>
+            <label className="lbl">hugging face</label>
+            <input name="huggingface" className="field" defaultValue={me.huggingface || ""} />
+          </div>
+          <div>
+            <label className="lbl">linkedin</label>
+            <input name="linkedin" className="field" defaultValue={me.linkedin || ""} />
+          </div>
+          <div>
+            <label className="lbl">site</label>
+            <input name="website" className="field" defaultValue={me.website || ""} />
+          </div>
+          <div>
+            <label className="lbl">calendar</label>
+            <input name="calendarUrl" className="field" defaultValue={me.calendarUrl || ""} />
+          </div>
+          <label className="flex gap-2 text-sm">
+            <input type="checkbox" name="takesMeetings" defaultChecked={me.takesMeetings} />
+            Take meetings
+          </label>
+          <label className="flex items-start gap-2 text-sm">
+            <input type="checkbox" name="optIn" defaultChecked={me.optInBuilders} className="mt-1" />
+            <span>
+              Opt in to receiving emails, messages, and/or calls from the
+              builders of the tools you download.
+            </span>
+          </label>
+          <button className="btn w-fit" type="submit">
+            Save
+          </button>
+        </form>
+      </section>
+
+      <section>
+        <div className="flex items-end justify-between mb-3">
+          <h2 className="display text-2xl">Board posts</h2>
+          <Link href="/board/new" className="nav-link">
+            New pin →
+          </Link>
+        </div>
+        {posts.length === 0 ? (
+          <p className="text-dim">None yet.</p>
+        ) : (
+          <ul className="space-y-2">
+            {posts.map((p) => (
+              <li key={p.id}>
+                <Link href={`/board/${p.id}`}>
+                  {p.kind} · {p.title}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section>
+        <h2 className="display text-2xl mb-3">Taken</h2>
+        {takes.length === 0 ? (
+          <p className="text-dim">
+            None yet. <Link href="/find">Menu</Link>
+          </p>
+        ) : (
+          <ul className="space-y-2">
+            {takes.map((t) => (
+              <li key={t.id}>
+                <Link href={`/l/${t.listing.slug}`}>
+                  #{padTicket(t.listing.number)} {t.listing.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section>
+        <h2 className="display text-2xl mb-3">Listed</h2>
+        {listed.length === 0 ? (
+          <p className="text-dim">
+            None. <Link href="/list">List a repo</Link>
+          </p>
+        ) : (
+          <ul className="space-y-2">
+            {listed.map((l) => (
+              <li key={l.id}>
+                <Link href={`/l/${l.slug}`}>
+                  #{padTicket(l.number)} {l.name}
+                </Link>
+                {l.claimed ? " · claimed" : " · unclaimed"}
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section>
+        <h2 className="display text-2xl mb-3">People who took a tool</h2>
+        {inbox.length === 0 ? (
+          <p className="text-dim">Empty.</p>
+        ) : (
+          <ul className="space-y-2">
+            {inbox.map((row) => (
+              <li key={row.id} className="ticket p-3">
+                <Link href={`/u/${row.user.slug}`}>{row.user.name || row.user.slug}</Link>
+                {" · "}
+                {row.listing.name}
+                {row.user.email && row.optedIn ? ` · ${row.user.email}` : ""}
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section>
+        <h2 className="display text-2xl mb-3">Meetings</h2>
+        <ul className="space-y-2">
+          {meetingsIn.map((m) => (
+            <li key={m.id} className="ticket p-3">
+              In · {m.fromUser.name || m.fromUser.slug} · {m.kind} · {m.listing?.name || "profile"} · {m.status}
+            </li>
+          ))}
+          {meetingsOut.map((m) => (
+            <li key={m.id} className="ticket p-3">
+              Out · {m.toUser.name || m.toUser.slug} · {m.kind} · {m.status}
+            </li>
+          ))}
+          {meetingsIn.length + meetingsOut.length === 0 && <li className="text-dim">None.</li>}
+        </ul>
+      </section>
+
+      <p>
+        <Link href="/tip" className="nav-link">
+          Tip the cafe
+        </Link>
+      </p>
+    </main>
+  );
+}

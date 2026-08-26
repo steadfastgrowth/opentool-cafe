@@ -1,0 +1,26 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "opentool-cafe",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2025-09-23",
+  "compatibility_flags": ["nodejs_compat", "nodejs_compat_populate_process_env"],
+  "vars": {
+    "APP_URL": "https://opentool.cafe"
+  },
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "opentool-cafe",
+      "database_id": "c867ef26-b470-4210-b095-77b654c3250f"
+    }
+  ],
+  "observability": { "enabled": true },
+  "routes": [
+    { "pattern": "opentool.cafe/*", "zone_name": "opentool.cafe" },
+    { "pattern": "www.opentool.cafe/*", "zone_name": "opentool.cafe" }
+  ]
+}
