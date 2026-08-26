@@ -521,3 +521,60 @@ export async function toggleFollow(formData: FormData) {
   revalidatePath("/board");
   redirect(`/u/${slug}`);
 }
+
+export async function toggleLike(formData: FormData) {
+  const prisma = await getPrisma();
+  const me = await getSessionUser();
+  if (!me) redirect("/join");
+  const postId = String(formData.get("postId") || "");
+  const post = await prisma.post.findUnique({ where: { id: postId } });
+  if (!post) redirect("/board");
+  const existing = await prisma.postLike.findUnique({
+    where: { postId_userId: { postId, userId: me.id } },
+  });
+  if (existing) {
+    await prisma.postLike.delete({ where: { id: existing.id } });
+  } else {
+    await prisma.postLike.create({ data: { postId, userId: me.id } });
+  }
+  revalidatePath(`/board/${post.id}`);
+  revalidatePath("/board");
+  redirect(`/board/${post.id}`);
+}
+
+export async function addComment(formData: FormData) {
+  const prisma = await getPrisma();
+  const me = await getSessionUser();
+  if (!me) redirect("/join");
+  const postId = String(formData.get("postId") || "");
+  const body = String(formData.get("body") || "").trim();
+  const post = await prisma.post.findUnique({ where: { id: postId } });
+  if (!post) redirect("/board");
+  if (!body || body.length > 2000) redirect(`/board/${post.id}?err=comment`);
+  const ip = await clientIp();
+  const gated = await rateLimit(`comment:${me.id}:${ip}`, 20, WINDOW_15M);
+  if (!gated.ok) redirect(`/board/${post.id}?err=rate`);
+  await prisma.postComment.create({ data: { postId, userId: me.id, body } });
+  revalidatePath(`/board/${post.id}`);
+  redirect(`/board/${post.id}`);
+}
+
+export async function sendDirectMessage(formData: FormData) {
+  const prisma = await getPrisma();
+  const me = await getSessionUser();
+  if (!me) redirect("/join");
+  const slug = String(formData.get("slug") || "");
+  const body = String(formData.get("body") || "").trim();
+  const person = await prisma.user.findUnique({ where: { slug } });
+  if (!person || person.id === me.id) redirect("/mail");
+  if (!body || body.length > 2000) redirect(`/mail/${slug}?err=fields`);
+  const ip = await clientIp();
+  const gated = await rateLimit(`dm:${me.id}:${ip}`, 30, WINDOW_15M);
+  if (!gated.ok) redirect(`/mail/${slug}?err=rate`);
+  await prisma.directMessage.create({
+    data: { fromUserId: me.id, toUserId: person.id, body },
+  });
+  revalidatePath("/mail");
+  revalidatePath(`/mail/${slug}`);
+  redirect(`/mail/${slug}`);
+}

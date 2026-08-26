@@ -42,6 +42,10 @@ model User {
   posts        Post[]
   following    Follow[] @relation("Following")
   followers    Follow[] @relation("Followers")
+  likes        PostLike[]
+  comments     PostComment[]
+  dmsFrom      DirectMessage[] @relation("DmFrom")
+  dmsTo        DirectMessage[] @relation("DmTo")
 }
 
 model Session {
@@ -137,6 +141,41 @@ model Post {
   body      String
   tags      String   @default("")
   createdAt DateTime @default(now())
+
+  likes    PostLike[]
+  comments PostComment[]
+}
+
+model PostLike {
+  id        String   @id @default(cuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([postId, userId])
+}
+
+model PostComment {
+  id        String   @id @default(cuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  body      String
+  createdAt DateTime @default(now())
+}
+
+model DirectMessage {
+  id         String    @id @default(cuid())
+  fromUserId String
+  fromUser   User      @relation("DmFrom", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUserId   String
+  toUser     User      @relation("DmTo", fields: [toUserId], references: [id], onDelete: Cascade)
+  body       String
+  readAt     DateTime?
+  createdAt  DateTime  @default(now())
 }
 
 model Follow {

@@ -2,12 +2,6 @@ import { Link } from "@/components/link";
 import { getPrisma } from "@/lib/db";
 import { Avatar } from "@/components/avatar";
 
-const links = [
-  { href: "/find", label: "menu" },
-  { href: "/board", label: "board" },
-  { href: "/tip", label: "tip" },
-] as const;
-
 export async function Chrome({
   signedIn,
   slug,
@@ -19,6 +13,18 @@ export async function Chrome({
   avatarUrl?: string | null;
   name?: string | null;
 }) {
+  const links = signedIn
+    ? ([
+        { href: "/find", label: "menu" },
+        { href: "/board", label: "board" },
+        { href: "/mail", label: "mail" },
+        { href: "/tip", label: "tip" },
+      ] as const)
+    : ([
+        { href: "/find", label: "menu" },
+        { href: "/board", label: "board" },
+        { href: "/tip", label: "tip" },
+      ] as const);
   const prisma = await getPrisma();
   const board = await prisma.listing.findMany({
     orderBy: { number: "asc" },

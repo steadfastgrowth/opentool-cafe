@@ -77,7 +77,12 @@ export default async function ProfilePage({
                   Edit
                 </Link>
               ) : me ? (
-                <FollowButton slug={person.slug} following={following} />
+                <>
+                  <FollowButton slug={person.slug} following={following} />
+                  <Link href={`/mail/${person.slug}`} className="btn sm:w-auto no-underline">
+                    Message
+                  </Link>
+                </>
               ) : (
                 <Link href="/join" className="btn sm:w-auto no-underline">
                   Follow

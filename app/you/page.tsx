@@ -51,6 +51,9 @@ export default async function YouPage({
           <div>
             <h1 className="display text-4xl">{me.name || me.slug}</h1>
             <p className="font-mono text-dim mt-1">@{me.slug}</p>
+            <p className="font-mono text-[11px] text-mark mt-2">
+              Door: {me.githubId ? "GitHub" : me.passwordHash ? "email + password" : "email code"}
+            </p>
             <p className="mt-3 flex flex-wrap gap-2">
               <Link href={`/u/${me.slug}`} className="btn sm:w-auto no-underline">
                 View public profile

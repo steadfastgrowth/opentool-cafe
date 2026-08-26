@@ -22,7 +22,7 @@ export default async function BoardPage({
   const posts = await prisma.post.findMany({
     where: kind && kind !== "all" ? { kind } : undefined,
     orderBy: { createdAt: "desc" },
-    include: { author: true },
+    include: { author: true, _count: { select: { likes: true, comments: true } } },
     take: 80,
   });
   return (
@@ -60,6 +60,7 @@ export default async function BoardPage({
             <p className="font-mono text-[11px] text-mark mt-2">
               @{p.author.slug}
               {p.tags ? ` · ${p.tags}` : ""}
+              {` · ${p._count.likes} likes · ${p._count.comments} comments`}
             </p>
           </Link>
         ))}
