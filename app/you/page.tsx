@@ -2,8 +2,9 @@ import { Link } from "@/components/link";
 import { redirect } from "next/navigation";
 import { getSessionUser, padTicket } from "@/lib/auth";
 import { getPrisma } from "@/lib/db";
-import { logout, saveProfile, uploadAvatar, setPassword } from "@/app/actions";
+import { logout, saveProfile, uploadAvatar, setPassword, openNotice } from "@/app/actions";
 import { Avatar } from "@/components/avatar";
+import { noticeLine } from "@/lib/notice";
 
 export default async function YouPage({
   searchParams,
@@ -42,6 +43,12 @@ export default async function YouPage({
     where: { authorId: me.id },
     orderBy: { createdAt: "desc" },
   });
+  const notices = await prisma.notice.findMany({
+    where: { toUserId: me.id },
+    include: { fromUser: true },
+    orderBy: { createdAt: "desc" },
+    take: 40,
+  });
 
   return (
     <main className="max-w-3xl mx-auto px-5 py-10 space-y-10">
@@ -71,6 +78,27 @@ export default async function YouPage({
       {q.ok === "password" && <p>Password saved.</p>}
       {q.err === "password" && <p>Password needs at least 8 characters.</p>}
       {q.err === "photo" && <p>Photo needs to be a jpg/png/webp under 3MB. Uploads may not persist on this host yet.</p>}
+
+      <section id="desk" className="ticket p-6">
+        <h2 className="display text-xl mb-4">Desk</h2>
+        {notices.length === 0 ? (
+          <p className="text-dim">Empty.</p>
+        ) : (
+          <ul className="space-y-2">
+            {notices.map((n: { id: string; kind: string; readAt: Date | null; fromUser: { slug: string } }) => (
+              <li key={n.id}>
+                <form action={openNotice}>
+                  <input type="hidden" name="id" value={n.id} />
+                  <button className="w-full text-left" type="submit">
+                    {noticeLine(n.kind, n.fromUser.slug)}
+                    {n.readAt ? "" : " · new"}
+                  </button>
+                </form>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
       <section className="ticket p-6">
         <h2 className="display text-xl mb-4">Photo</h2>

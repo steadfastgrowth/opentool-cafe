@@ -7,11 +7,13 @@ export async function Chrome({
   slug,
   avatarUrl,
   name,
+  mailUnread = 0,
 }: {
   signedIn: boolean;
   slug: string | null;
   avatarUrl?: string | null;
   name?: string | null;
+  mailUnread?: number;
 }) {
   const links = signedIn
     ? ([
@@ -51,7 +53,7 @@ export async function Chrome({
           <nav className="nav-links" aria-label="Primary">
             {links.map((l) => (
               <Link key={l.href} className={l.href === "/tip" ? "nav-link tip-nav" : "nav-link"} href={l.href}>
-                {l.label}
+                {l.href === "/mail" && mailUnread > 0 ? `mail · ${mailUnread}` : l.label}
               </Link>
             ))}
           </nav>
@@ -81,7 +83,7 @@ export async function Chrome({
               <nav className="flex flex-col" aria-label="Mobile">
                 {links.map((l) => (
                   <Link key={l.href} className="nav-link py-2" href={l.href}>
-                    {l.label}
+                    {l.href === "/mail" && mailUnread > 0 ? `mail · ${mailUnread}` : l.label}
                   </Link>
                 ))}
                 <Link className="nav-link py-2" href="/search">

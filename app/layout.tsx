@@ -6,6 +6,7 @@ import { Chrome } from "@/components/chrome";
 import { Footer } from "@/components/footer";
 import { TrackPage } from "@/components/track-page";
 import { getSessionUser } from "@/lib/auth";
+import { getPrisma } from "@/lib/db";
 
 const display = Chakra_Petch({
   weight: ["500", "600", "700"],
@@ -75,6 +76,13 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const me = await getSessionUser();
+  let mailUnread = 0;
+  if (me) {
+    const prisma = await getPrisma();
+    mailUnread = await prisma.directMessage.count({
+      where: { toUserId: me.id, readAt: null },
+    });
+  }
   return (
     <html lang="en">
       <body className={`${display.variable} ${sans.variable} ${mono.variable} antialiased`}>
@@ -86,6 +94,7 @@ export default async function RootLayout({
           slug={me?.slug || null}
           avatarUrl={me?.avatarUrl}
           name={me?.name}
+          mailUnread={mailUnread}
         />
         <div id="content">{children}</div>
         <Footer />

@@ -46,6 +46,8 @@ model User {
   comments     PostComment[]
   dmsFrom      DirectMessage[] @relation("DmFrom")
   dmsTo        DirectMessage[] @relation("DmTo")
+  noticesTo    Notice[] @relation("NoticesTo")
+  noticesFrom  Notice[] @relation("NoticesFrom")
 }
 
 model Session {
@@ -174,6 +176,19 @@ model DirectMessage {
   toUserId   String
   toUser     User      @relation("DmTo", fields: [toUserId], references: [id], onDelete: Cascade)
   body       String
+  readAt     DateTime?
+  createdAt  DateTime  @default(now())
+}
+
+model Notice {
+  id         String    @id @default(cuid())
+  toUserId   String
+  toUser     User      @relation("NoticesTo", fields: [toUserId], references: [id], onDelete: Cascade)
+  fromUserId String
+  fromUser   User      @relation("NoticesFrom", fields: [fromUserId], references: [id], onDelete: Cascade)
+  kind       String
+  postId     String?
+  href       String
   readAt     DateTime?
   createdAt  DateTime  @default(now())
 }

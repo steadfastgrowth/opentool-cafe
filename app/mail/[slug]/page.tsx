@@ -5,6 +5,7 @@ import { getSessionUser } from "@/lib/auth";
 import { sendDirectMessage } from "@/app/actions";
 import { Stage } from "@/components/stage";
 import { Avatar } from "@/components/avatar";
+import { RefreshMail } from "@/components/refresh-mail";
 
 export default async function MailThreadPage({
   params,
@@ -25,6 +26,10 @@ export default async function MailThreadPage({
     where: { fromUserId: person.id, toUserId: me.id, readAt: null },
     data: { readAt: new Date() },
   });
+  await prisma.notice.updateMany({
+    where: { toUserId: me.id, fromUserId: person.id, kind: "mail", readAt: null },
+    data: { readAt: new Date() },
+  });
 
   const messages = await prisma.directMessage.findMany({
     where: {
@@ -39,6 +44,7 @@ export default async function MailThreadPage({
 
   return (
     <Stage label="Mail" wide={false}>
+      <RefreshMail />
       <Link href="/mail" className="text-sm text-dim">
         ← mail
       </Link>

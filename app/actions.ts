@@ -20,6 +20,7 @@ import { clientIp } from "@/lib/request";
 import { rateLimit, WINDOW_15M } from "@/lib/rate-limit";
 import { parseHttpUrl } from "@/lib/urls";
 import { notifyDesk } from "@/lib/notify";
+import { dropUnreadNotice, pingNotice } from "@/lib/notice";
 
 async function openSession(userId: string) {
   const prisma = await getPrisma();
@@ -514,8 +515,20 @@ export async function toggleFollow(formData: FormData) {
   });
   if (existing) {
     await prisma.follow.delete({ where: { id: existing.id } });
+    await dropUnreadNotice(prisma, {
+      toUserId: person.id,
+      fromUserId: me.id,
+      kind: "follow",
+      href: `/u/${me.slug}`,
+    });
   } else {
     await prisma.follow.create({ data: { followerId: me.id, followingId: person.id } });
+    await pingNotice(prisma, {
+      toUserId: person.id,
+      fromUserId: me.id,
+      kind: "follow",
+      href: `/u/${me.slug}`,
+    });
   }
   revalidatePath(`/u/${slug}`);
   revalidatePath("/board");
@@ -534,8 +547,21 @@ export async function toggleLike(formData: FormData) {
   });
   if (existing) {
     await prisma.postLike.delete({ where: { id: existing.id } });
+    await dropUnreadNotice(prisma, {
+      toUserId: post.authorId,
+      fromUserId: me.id,
+      kind: "like",
+      href: `/board/${post.id}`,
+    });
   } else {
     await prisma.postLike.create({ data: { postId, userId: me.id } });
+    await pingNotice(prisma, {
+      toUserId: post.authorId,
+      fromUserId: me.id,
+      kind: "like",
+      href: `/board/${post.id}`,
+      postId: post.id,
+    });
   }
   revalidatePath(`/board/${post.id}`);
   revalidatePath("/board");
@@ -555,6 +581,13 @@ export async function addComment(formData: FormData) {
   const gated = await rateLimit(`comment:${me.id}:${ip}`, 20, WINDOW_15M);
   if (!gated.ok) redirect(`/board/${post.id}?err=rate`);
   await prisma.postComment.create({ data: { postId, userId: me.id, body } });
+  await pingNotice(prisma, {
+    toUserId: post.authorId,
+    fromUserId: me.id,
+    kind: "comment",
+    href: `/board/${post.id}`,
+    postId: post.id,
+  });
   revalidatePath(`/board/${post.id}`);
   redirect(`/board/${post.id}`);
 }
@@ -574,7 +607,27 @@ export async function sendDirectMessage(formData: FormData) {
   await prisma.directMessage.create({
     data: { fromUserId: me.id, toUserId: person.id, body },
   });
+  await pingNotice(prisma, {
+    toUserId: person.id,
+    fromUserId: me.id,
+    kind: "mail",
+    href: `/mail/${me.slug}`,
+  });
   revalidatePath("/mail");
   revalidatePath(`/mail/${slug}`);
   redirect(`/mail/${slug}`);
+}
+
+export async function openNotice(formData: FormData) {
+  const prisma = await getPrisma();
+  const me = await getSessionUser();
+  if (!me) redirect("/join");
+  const id = String(formData.get("id") || "");
+  const notice = await prisma.notice.findUnique({ where: { id } });
+  if (!notice || notice.toUserId !== me.id) redirect("/you");
+  if (!notice.readAt) {
+    await prisma.notice.update({ where: { id }, data: { readAt: new Date() } });
+  }
+  const href = notice.href.startsWith("/") && !notice.href.startsWith("//") ? notice.href : "/you";
+  redirect(href);
 }
