@@ -1,12 +1,9 @@
-import { registerWithPassword, requestMagicLink } from "@/app/actions";
+import { loginWithPassword, requestMagicLink } from "@/app/actions";
 
-const OPTIN =
-  "Opt in to receiving emails, messages, and/or calls from the builders of the tools you download.";
-
-export function JoinForm() {
+export function LoginForm() {
   return (
     <div className="space-y-8">
-      <form action={registerWithPassword} className="space-y-4">
+      <form action={loginWithPassword} className="space-y-4">
         <div>
           <label className="lbl" htmlFor="email">
             email
@@ -23,32 +20,13 @@ export function JoinForm() {
             type="password"
             required
             className="field"
-            autoComplete="new-password"
+            autoComplete="current-password"
             minLength={8}
           />
         </div>
-        <div>
-          <label className="lbl" htmlFor="confirm">
-            confirm password
-          </label>
-          <input
-            id="confirm"
-            name="confirm"
-            type="password"
-            required
-            className="field"
-            autoComplete="new-password"
-            minLength={8}
-          />
-        </div>
-        <label className="flex items-start gap-2 text-sm text-dim">
-          <input type="checkbox" name="optIn" className="mt-1" />
-          <span>{OPTIN}</span>
-        </label>
         <button className="btn" type="submit">
-          Create account
+          Sign in
         </button>
-        <p className="text-sm text-dim">At least 8 characters. We store a hash, never the password.</p>
       </form>
 
       <form action={requestMagicLink} className="space-y-4">
@@ -59,10 +37,6 @@ export function JoinForm() {
           </label>
           <input id="code-email" name="email" type="email" required className="field" autoComplete="email" />
         </div>
-        <label className="flex items-start gap-2 text-sm text-dim">
-          <input type="checkbox" name="optIn" className="mt-1" />
-          <span>{OPTIN}</span>
-        </label>
         <button className="btn btn-ghost" type="submit">
           Email me a 6-digit code
         </button>

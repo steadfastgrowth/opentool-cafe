@@ -1,28 +1,54 @@
 import Link from "next/link";
+import { Stage } from "@/components/stage";
 
 export default function PrivacyPage() {
   return (
-    <main className="max-w-xl mx-auto px-5 py-12 space-y-4 text-sm leading-relaxed">
-      <h1 className="display text-4xl mb-4">Privacy</h1>
-      <p>Open Tool Cafe is a public directory of tools and people. Run your own copy if this host is not a fit.</p>
-      <p>
-        An account stores email, an optional password hash, optional phone, profile text, and links you type.
-        Phone is not shown on the public profile. Email is shown to a builder only when a tool is taken and the
-        opt-in box is on. That builder is the person who claimed that listing.
+    <Stage label="Privacy" wide={false}>
+      <h1 className="display text-4xl mb-3">Privacy</h1>
+      <p className="text-dim mb-8">
+        We run a small cafe. We do not sell your data. We do not run Google Analytics.
       </p>
-      <p>
-        The opt-in box means: emails, messages, and/or calls from the builders of the tools you download. Turn
-        it off anytime on <Link href="/you">/you</Link>.
+
+      <h2 className="display text-2xl mb-2">What we keep</h2>
+      <ul className="text-dim mb-6 space-y-2 leading-relaxed list-disc pl-5">
+        <li>Account: email, name, slug, profile fields you type, GitHub handle if you connect GitHub.</li>
+        <li>Passwords: never stored as passwords. We keep a salted PBKDF2 hash only.</li>
+        <li>
+          Session cookie (<span className="font-mono">opentool_sid</span>), httpOnly, so you stay logged in.
+        </li>
+        <li>
+          First-party metrics: page path, time, anonymous visitor id in your browser, and external referrer. No
+          advertising profile.
+        </li>
+        <li>
+          Optional opt-in so builders of tools you take can email, message, or call. Off anytime on{" "}
+          <Link href="/you">/you</Link>. Phone is not on the public profile.
+        </li>
+        <li>
+          Tips go through Stripe on the Steadfast Growth merchant. Card data never touches this server. Statement
+          line: STEADFAST GROWTH.
+        </li>
+      </ul>
+
+      <h2 className="display text-2xl mb-2">Who sees it</h2>
+      <p className="text-dim mb-6 leading-relaxed">
+        Public profile, posts, and listed tools are public. Hosting is on Cloudflare (Workers + D1). Email login
+        codes go through our mail provider. GitHub sees the OAuth dance if you use GitHub. We do not sell lists.
       </p>
-      <p>
-        A session cookie (<span className="font-mono">opentool_sid</span>) keeps you signed in. First-party
-        event counts (page views, takes, outbound clicks) stay on this host. Referrer is stored, truncated.
+
+      <h2 className="display text-2xl mb-2">How long</h2>
+      <p className="text-dim mb-6 leading-relaxed">
+        Account data lasts while the account exists. Ask via <Link href="/help">help</Link> to delete. We may keep
+        what the law or safety requires.
       </p>
-      <p>
-        Tips go through Stripe on the existing Steadfast Growth merchant. Card data never touches this server.
-        Statement line: STEADFAST GROWTH.
+
+      <h2 className="display text-2xl mb-2">Kids</h2>
+      <p className="text-dim mb-6 leading-relaxed">
+        The cafe is for adults (18+). We do not knowingly collect data from children. Sexual content and any
+        exploitation of minors is banned; see the <Link href="/rules">house rules</Link>.
       </p>
-      <p>No sale of contact lists in this slice. Delete a profile by emailing the operator listed on GitHub.</p>
-    </main>
+
+      <p className="font-mono text-[12px] text-dim">Effective 26 Aug 2026. We can update this page.</p>
+    </Stage>
   );
 }

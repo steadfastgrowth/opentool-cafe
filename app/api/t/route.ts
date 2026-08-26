@@ -25,13 +25,17 @@ export async function POST(req: NextRequest) {
   }
   let name = "page_view";
   let path: string | null = null;
+  let ref: string | null = null;
+  let visitorId: string | null = null;
   try {
-    const body = (await req.json()) as { name?: string; path?: string };
+    const body = (await req.json()) as { name?: string; path?: string; ref?: string; visitorId?: string };
     if (body.name && ALLOWED.has(body.name)) name = body.name;
     if (typeof body.path === "string") path = body.path;
+    if (typeof body.ref === "string") ref = body.ref;
+    if (typeof body.visitorId === "string") visitorId = body.visitorId;
   } catch {
     path = req.nextUrl.pathname;
   }
-  await track(name, { path });
+  await track(name, { path, ref, visitorId });
   return new NextResponse(null, { status: 204 });
 }

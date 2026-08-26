@@ -2,7 +2,13 @@ import { getPrisma } from "./db";
 
 export async function track(
   name: string,
-  opts?: { path?: string | null; listingId?: string | null; userId?: string | null },
+  opts?: {
+    path?: string | null;
+    listingId?: string | null;
+    userId?: string | null;
+    ref?: string | null;
+    visitorId?: string | null;
+  },
 ) {
   try {
     const prisma = await getPrisma();
@@ -12,6 +18,8 @@ export async function track(
         path: opts?.path?.slice(0, 240) || null,
         listingId: opts?.listingId || null,
         userId: opts?.userId || null,
+        ref: opts?.ref?.slice(0, 240) || null,
+        visitorId: opts?.visitorId?.slice(0, 64) || null,
       },
     });
   } catch {

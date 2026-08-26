@@ -4,6 +4,7 @@ import { randomBytes } from "crypto";
 import { cookieSecure } from "./request";
 
 const COOKIE = "opentool_sid";
+const NEXT = "opentool_next";
 const WEEK = 60 * 60 * 24 * 7;
 
 export function newToken() {
@@ -43,6 +44,25 @@ export async function clearSessionCookie() {
     await prisma.session.deleteMany({ where: { token } });
   }
   jar.delete(COOKIE);
+}
+
+export function safeNext(raw?: string | null) {
+  if (!raw || !raw.startsWith("/") || raw.startsWith("//") || raw.includes("://")) return null;
+  return raw;
+}
+
+export async function rememberNext(raw?: string | null) {
+  const n = safeNext(raw);
+  if (!n) return;
+  const jar = await cookies();
+  jar.set(NEXT, n, { httpOnly: true, sameSite: "lax", path: "/", maxAge: 1800 });
+}
+
+export async function consumeNext(fallback = "/you") {
+  const jar = await cookies();
+  const n = safeNext(jar.get(NEXT)?.value);
+  jar.delete(NEXT);
+  return n || fallback;
 }
 
 export function slugify(input: string) {

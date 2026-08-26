@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { getPrisma } from "@/lib/db";
 import {
   clearSessionCookie,
+  consumeNext,
   getSessionUser,
   githubOwnerFromUrl,
   newToken,
@@ -119,7 +120,7 @@ export async function consumeMagic(token: string, _ignoredOpt?: boolean) {
   }
   await openSession(user.id);
   await track("join_code", { path: "/join", userId: user.id });
-  redirect("/you");
+  redirect(await consumeNext());
 }
 
 export async function registerWithPassword(formData: FormData) {
@@ -132,6 +133,8 @@ export async function registerWithPassword(formData: FormData) {
   const optInBuilders = formData.get("optIn") === "on";
   if (!email || !email.includes("@")) redirect("/join?err=email");
   if (password.length < 8) redirect("/join?err=password");
+  const confirm = String(formData.get("confirm") || "");
+  if (password !== confirm) redirect("/join?err=match");
   const gated = await rateLimit(`login:ip:${ip}`, 8, WINDOW_15M);
   if (!gated.ok) redirect("/join?err=rate");
   const existing = await prisma.user.findUnique({ where: { email } });
@@ -155,7 +158,7 @@ export async function registerWithPassword(formData: FormData) {
   );
   await openSession(user.id);
   await track("join_password", { path: "/join", userId: user.id });
-  redirect("/you");
+  redirect(await consumeNext());
 }
 
 export async function loginWithPassword(formData: FormData) {
@@ -165,16 +168,16 @@ export async function loginWithPassword(formData: FormData) {
     .trim()
     .toLowerCase();
   const password = String(formData.get("password") || "");
-  if (!email || !email.includes("@")) redirect("/join?err=email");
+  if (!email || !email.includes("@")) redirect("/login?err=email");
   const gated = await rateLimit(`login:ip:${ip}`, 8, WINDOW_15M);
-  if (!gated.ok) redirect("/join?err=rate");
+  if (!gated.ok) redirect("/login?err=rate");
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user?.passwordHash || !(await verifyPassword(password, user.passwordHash))) {
-    redirect("/join?err=login");
+    redirect("/login?err=login");
   }
   await openSession(user.id);
   await track("join_password", { path: "/join", userId: user.id });
-  redirect("/you");
+  redirect(await consumeNext());
 }
 
 export async function setPassword(formData: FormData) {

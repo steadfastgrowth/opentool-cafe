@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getPrisma } from "@/lib/db";
 import { padTicket } from "@/lib/auth";
 import { Avatar } from "@/components/avatar";
+import { Stage } from "@/components/stage";
 
 export default async function SearchPage({
   searchParams,
@@ -24,29 +25,25 @@ export default async function SearchPage({
   const peopleHit = people.filter((p) =>
     `${p.name || ""} ${p.slug} ${p.bio || ""} ${p.skills || ""} ${p.offering || ""}`.toLowerCase().includes(like),
   );
-  const toolHit = tools.filter((l) =>
-    `${l.name} ${l.oneLiner} ${l.tags} ${l.body}`.toLowerCase().includes(like),
-  );
+  const toolHit = tools.filter((l) => `${l.name} ${l.oneLiner} ${l.tags} ${l.body}`.toLowerCase().includes(like));
   const postHit = posts.filter((p) =>
     `${p.title} ${p.body} ${p.tags} ${p.author.name || ""} ${p.author.slug}`.toLowerCase().includes(like),
   );
 
   return (
-    <main className="max-w-3xl mx-auto px-4 sm:px-5 py-8 boot">
-      <h1 className="display text-4xl mb-4">Search</h1>
-      <form action="/search" role="search" className="mb-8">
-        <label className="lbl" htmlFor="search-q">
-          people, tools, posts
+    <Stage label="Search">
+      <h1 className="display text-4xl mb-6">Search</h1>
+      <form action="/search" role="search" className="flex flex-col sm:flex-row gap-3 mb-8 max-w-lg">
+        <label className="sr-only" htmlFor="search-q">
+          Search
         </label>
-        <div className="flex flex-col sm:flex-row gap-2">
-          <input id="search-q" name="q" defaultValue={query} className="field" autoFocus />
-          <button className="btn sm:w-auto" type="submit">
-            Search
-          </button>
-        </div>
+        <input id="search-q" name="q" defaultValue={query} className="field" autoFocus placeholder="Search" />
+        <button className="btn sm:w-auto" type="submit">
+          Search
+        </button>
       </form>
 
-      {!query && <p className="text-dim">Type a name, a tool, or a pin.</p>}
+      {!query && <p className="text-dim">Type a name, a tool, or a post.</p>}
 
       {query && (
         <div className="space-y-10">
@@ -55,59 +52,53 @@ export default async function SearchPage({
             {peopleHit.length === 0 ? (
               <p className="text-dim">None.</p>
             ) : (
-              <ul className="space-y-2">
+              <div className="grid md:grid-cols-2 gap-3">
                 {peopleHit.map((p) => (
-                  <li key={p.id}>
-                    <Link href={`/u/${p.slug}`} className="ticket p-3 flex gap-3 no-underline items-center">
-                      <Avatar name={p.name || p.slug} src={p.avatarUrl} size={44} />
-                      <div>
-                        <div className="display text-lg">{p.name || p.slug}</div>
-                        <p className="text-sm text-dim">@{p.slug}</p>
-                      </div>
-                    </Link>
-                  </li>
+                  <Link key={p.id} href={`/u/${p.slug}`} className="ticket p-4 flex gap-3 no-underline items-center">
+                    <Avatar name={p.name || p.slug} src={p.avatarUrl} size={44} />
+                    <div>
+                      <div className="display text-xl font-semibold">{p.name || p.slug}</div>
+                      <p className="font-mono text-[11px] text-mark">@{p.slug}</p>
+                    </div>
+                  </Link>
                 ))}
-              </ul>
+              </div>
             )}
           </section>
           <section>
-            <h2 className="display text-2xl mb-3">Tools · {toolHit.length}</h2>
+            <h2 className="display text-2xl mb-3">Menu · {toolHit.length}</h2>
             {toolHit.length === 0 ? (
               <p className="text-dim">None.</p>
             ) : (
-              <ul className="space-y-2">
+              <div className="grid md:grid-cols-2 gap-3">
                 {toolHit.map((l) => (
-                  <li key={l.id}>
-                    <Link href={`/l/${l.slug}`} className="ticket p-3 block no-underline">
-                      <span className="font-mono text-[11px] text-dim">#{padTicket(l.number)}</span>
-                      <div className="display text-lg">{l.name}</div>
-                      <p className="text-sm text-dim">{l.oneLiner}</p>
-                    </Link>
-                  </li>
+                  <Link key={l.id} href={`/l/${l.slug}`} className="ticket p-4 block no-underline">
+                    <div className="font-mono text-[11px] text-dim">#{padTicket(l.number)}</div>
+                    <div className="display text-xl font-semibold">{l.name}</div>
+                    <p className="text-sm mt-1 text-dim line-clamp-2">{l.oneLiner}</p>
+                  </Link>
                 ))}
-              </ul>
+              </div>
             )}
           </section>
           <section>
-            <h2 className="display text-2xl mb-3">Posts · {postHit.length}</h2>
+            <h2 className="display text-2xl mb-3">Board · {postHit.length}</h2>
             {postHit.length === 0 ? (
               <p className="text-dim">None.</p>
             ) : (
-              <ul className="space-y-2">
+              <div className="grid md:grid-cols-2 gap-3">
                 {postHit.map((p) => (
-                  <li key={p.id}>
-                    <Link href={`/board/${p.id}`} className="ticket p-3 block no-underline">
-                      <span className="font-mono text-[11px] text-mark">{p.kind}</span>
-                      <div className="display text-lg">{p.title}</div>
-                      <p className="text-sm text-dim">@{p.author.slug}</p>
-                    </Link>
-                  </li>
+                  <Link key={p.id} href={`/board/${p.id}`} className="ticket p-4 block no-underline">
+                    <div className="font-mono text-[11px] text-dim">{p.kind}</div>
+                    <div className="display text-xl font-semibold">{p.title}</div>
+                    <p className="font-mono text-[11px] text-mark mt-2">@{p.author.slug}</p>
+                  </Link>
                 ))}
-              </ul>
+              </div>
             )}
           </section>
         </div>
       )}
-    </main>
+    </Stage>
   );
 }

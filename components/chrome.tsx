@@ -3,6 +3,7 @@ import { getPrisma } from "@/lib/db";
 import { Avatar } from "@/components/avatar";
 
 const links = [
+  { href: "/find", label: "menu" },
   { href: "/board", label: "board" },
   { href: "/tip", label: "tip" },
 ] as const;
@@ -29,21 +30,18 @@ export async function Chrome({
   return (
     <header className="sticky top-0 z-40">
       <div className="nav-bar">
-        <Link href="/" className="nav-brand">
-          <span className="nav-mark" aria-hidden="true">
-            <span className="cup" />
+        <Link href="/" className="nav-mark" aria-label="Open Tool Cafe home">
+          <span className="steam">
+            <b />
+            <b />
+            <b />
           </span>
-          <span className="wordmark">opentool.cafe</span>
+          <span className="cup" />
         </Link>
-
-        <form action="/search" role="search" className="nav-search-wrap">
-          <label className="sr-only" htmlFor="nav-q">
-            Search
-          </label>
-          <input id="nav-q" name="q" className="nav-search" placeholder="Search people, tools, posts" />
-        </form>
-
-        <div className="nav-end">
+        <div className="nav-word-row">
+          <Link href="/" className="wordmark">
+            opentool.cafe
+          </Link>
           <nav className="nav-links" aria-label="Primary">
             {links.map((l) => (
               <Link key={l.href} className={l.href === "/tip" ? "nav-link tip-nav" : "nav-link"} href={l.href}>
@@ -51,6 +49,15 @@ export async function Chrome({
               </Link>
             ))}
           </nav>
+        </div>
+
+        <div className="nav-end">
+          <form action="/search" role="search" className="nav-search-wrap">
+            <label className="sr-only" htmlFor="nav-q">
+              Search
+            </label>
+            <input id="nav-q" name="q" className="nav-search" placeholder="Search" />
+          </form>
           {signedIn && slug ? (
             <Link href={`/u/${slug}`} className="nav-avatar" aria-label="Your public profile">
               <Avatar name={name || slug} src={avatarUrl} size={32} />
@@ -61,8 +68,8 @@ export async function Chrome({
             </Link>
           )}
           <details className="nav-more">
-            <summary className="mobile-menu-btn" aria-label="Open menu">
-              menu
+            <summary className="mobile-menu-btn" aria-label="Open more">
+              more
             </summary>
             <div className="mobile-drawer">
               <nav className="flex flex-col" aria-label="Mobile">

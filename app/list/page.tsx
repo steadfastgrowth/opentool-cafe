@@ -1,6 +1,7 @@
 import { getSessionUser } from "@/lib/auth";
 import { listRepo } from "@/app/actions";
-import { JoinForm } from "@/components/join-form";
+import { Stage } from "@/components/stage";
+import Link from "next/link";
 
 export default async function ListPage({
   searchParams,
@@ -10,15 +11,17 @@ export default async function ListPage({
   const me = await getSessionUser();
   const q = await searchParams;
   return (
-    <main className="max-w-3xl mx-auto px-5 py-10">
-      <p className="display text-sm tracking-[0.2em] uppercase text-mute mb-2">Back of house</p>
-      <h1 className="display text-4xl mb-3">Makers</h1>
-      <p className="mb-8 max-w-xl">
-        Put a repo on the board. People who take it show up on the tab. Listing is free.
-      </p>
+    <Stage label="List a tool" wide={false}>
+      <h1 className="display text-4xl mb-3">List a tool</h1>
+      <p className="mb-8 max-w-xl text-dim">Put a repo on the menu. Listing is free.</p>
       {!me ? (
-        <div className="ticket p-6 max-w-md">
-          <JoinForm />
+        <div className="flex flex-col sm:flex-row gap-3 max-w-md">
+          <Link href="/join" className="btn no-underline sm:w-auto">
+            Join
+          </Link>
+          <Link href="/login" className="btn btn-ghost no-underline sm:w-auto">
+            Login
+          </Link>
         </div>
       ) : (
         <form action={listRepo} className="ticket p-6 space-y-3 max-w-lg">
@@ -48,6 +51,6 @@ export default async function ListPage({
           </button>
         </form>
       )}
-    </main>
+    </Stage>
   );
 }

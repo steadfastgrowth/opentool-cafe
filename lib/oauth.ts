@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { getPrisma } from "@/lib/db";
-import { newToken, setSessionCookie, uniqueUserSlug } from "@/lib/auth";
+import { newToken, setSessionCookie, uniqueUserSlug, consumeNext } from "@/lib/auth";
 import { appUrl } from "@/lib/config";
 import { track } from "@/lib/track";
 import { cookieSecure } from "@/lib/request";
@@ -88,7 +88,7 @@ export async function finishGithub(req: NextRequest) {
     avatarUrl: user.avatar_url || null,
   });
   await track("join_github", { path: "/auth/github/callback" });
-  return NextResponse.redirect(new URL("/you", origin));
+  return NextResponse.redirect(new URL(await consumeNext(), origin));
 }
 
 async function upsertOAuthUser(input: {

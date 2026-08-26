@@ -156,6 +156,8 @@ model Event {
   path      String?
   listingId String?
   userId    String?
+  ref       String?
+  visitorId String?
   createdAt DateTime @default(now())
 }
 
