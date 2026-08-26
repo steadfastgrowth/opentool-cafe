@@ -17,33 +17,49 @@ export default async function FindPage({
     return true;
   });
   return (
-    <main className="max-w-5xl mx-auto px-5 py-10">
-      <h1 className="display text-4xl mb-6">The board</h1>
-      <form className="flex gap-2 mb-4">
-        <input name="q" defaultValue={q || ""} className="field" placeholder="Search" />
-        <button className="btn" type="submit">
-          Search
-        </button>
-      </form>
-      <div className="flex flex-wrap gap-2 mb-8">
-        <Link href="/find" className="text-xs border border-line px-2 py-1">
-          all
-        </Link>
-        {tags.map((t) => (
-          <Link key={t} href={`/find?tag=${encodeURIComponent(t)}`} className="text-xs border border-line px-2 py-1">
-            {t}
-          </Link>
-        ))}
-      </div>
-      <div className="grid md:grid-cols-2 gap-3">
-        {filtered.map((item) => (
-          <Link key={item.id} href={`/l/${item.slug}`} className="ticket p-4 block">
-            <div className="display text-xs text-mute">#{padTicket(item.number)}</div>
-            <div className="display text-xl font-semibold">{item.name}</div>
-            <p className="text-sm mt-1">{item.oneLiner}</p>
-            <p className="text-xs text-mute mt-2">{tagList(item.tags).join(" · ")}</p>
-          </Link>
-        ))}
+    <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8 boot">
+      <div className="stage">
+        <div className="receipt">
+          <span className="dots flex gap-1">
+            <span />
+            <span />
+            <span />
+          </span>
+          The board
+        </div>
+        <div className="p-6 sm:p-10">
+          <h1 className="display text-4xl mb-6">Pick a ticket</h1>
+          <form className="flex gap-3 mb-4 max-w-lg">
+            <input name="q" defaultValue={q || ""} className="field" placeholder="Search" />
+            <button className="btn" type="submit">
+              Search
+            </button>
+          </form>
+          <div className="flex flex-wrap gap-2 mb-8">
+            <Link href="/find" className="font-mono text-[11px] border border-line px-2 py-1">
+              all
+            </Link>
+            {tags.map((t) => (
+              <Link
+                key={t}
+                href={`/find?tag=${encodeURIComponent(t)}`}
+                className="font-mono text-[11px] border border-line px-2 py-1"
+              >
+                {t}
+              </Link>
+            ))}
+          </div>
+          <div className="grid md:grid-cols-2 gap-3">
+            {filtered.map((item) => (
+              <Link key={item.id} href={`/l/${item.slug}`} className="ticket p-4 block no-underline">
+                <div className="font-mono text-[11px] text-dim">#{padTicket(item.number)}</div>
+                <div className="display text-xl font-semibold">{item.name}</div>
+                <p className="text-sm mt-1 text-dim">{item.oneLiner}</p>
+                <p className="font-mono text-[11px] text-mark mt-2">{tagList(item.tags).join(" · ")}</p>
+              </Link>
+            ))}
+          </div>
+        </div>
       </div>
     </main>
   );
