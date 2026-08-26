@@ -40,7 +40,7 @@ export default async function ListingPage({
         ← the menu
       </Link>
       <p className="display text-xs text-mute mt-4">ticket · {listing.slug}</p>
-      <h1 className="display text-5xl font-semibold mt-1">{listing.name}</h1>
+      <h1 className="display text-4xl sm:text-5xl font-semibold mt-1">{listing.name}</h1>
       <p className="text-lg mt-3">{listing.oneLiner}</p>
       <p className="text-sm text-mute mt-2">{tagList(listing.tags).join(" · ")}</p>
       <p className="mt-4">{listing.body}</p>

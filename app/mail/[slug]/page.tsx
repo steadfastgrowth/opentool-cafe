@@ -3,11 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { getPrisma } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth";
 import { sendDirectMessage } from "@/app/actions";
-import { RefreshMail } from "@/components/refresh-mail";
-
-function hhmm(d: Date) {
-  return d.toISOString().slice(11, 16);
-}
+import { TtyLog } from "@/components/tty-log";
 
 export default async function MailThreadPage({
   params,
@@ -45,12 +41,11 @@ export default async function MailThreadPage({
   });
 
   return (
-    <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
-      <RefreshMail />
+    <main className="max-w-3xl mx-auto px-3 sm:px-6 py-4 sm:py-8">
       <div className="tty-screen">
         <div className="tty-bar">
           <span>
-            mail — {me.slug} ↔ {person.slug}
+            {me.slug} ↔ {person.slug}
           </span>
           <span>
             <Link href="/mail">exit</Link>
@@ -60,14 +55,15 @@ export default async function MailThreadPage({
         </div>
         <div className="tty-log" id="tty-log">
           <p className="tty-meta">$ talk {person.slug}</p>
-          {messages.length === 0 && <p className="tty-meta">no traffic yet.</p>}
-          {messages.map((m: { id: string; body: string; fromUserId: string; createdAt: Date }) => (
-            <p key={m.id} className="tty-line">
-              <span className="tty-time">{hhmm(m.createdAt)}</span>
-              <span className="tty-who">{m.fromUserId === me.id ? `${me.slug}>` : `${person.slug}>`}</span>
-              <span className="tty-body">{m.body}</span>
-            </p>
-          ))}
+          <TtyLog
+            slug={person.slug}
+            initial={messages.map((m: { id: string; body: string; fromUserId: string; createdAt: Date }) => ({
+              id: m.id,
+              body: m.body,
+              from: m.fromUserId === me.id ? me.slug : person.slug,
+              at: typeof m.createdAt === "string" ? m.createdAt : m.createdAt.toISOString(),
+            }))}
+          />
           {q.err === "fields" && <p className="tty-meta">need a line, under 2000.</p>}
           {q.err === "rate" && <p className="tty-meta">rate limit. wait.</p>}
         </div>

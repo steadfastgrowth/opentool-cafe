@@ -3,6 +3,8 @@ import { getPrisma } from "@/lib/db";
 import { padTicket, tagList, getSessionUser } from "@/lib/auth";
 import { Stage } from "@/components/stage";
 
+import { menuSort } from "@/lib/menu";
+
 const PREVIEW = 6;
 
 export default async function Home() {
@@ -29,7 +31,7 @@ export default async function Home() {
         include: { author: true },
         take: PREVIEW,
       }),
-      prisma.listing.findMany({ orderBy: { number: "asc" }, take: PREVIEW }),
+      prisma.listing.findMany({ take: 80 }),
     ]);
 
     const seen = new Set<string>();
@@ -39,6 +41,7 @@ export default async function Home() {
       seen.add(p.id);
       posts.push(p);
     }
+    const menu = menuSort(tools).slice(0, PREVIEW);
 
     return (
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8 boot">
@@ -99,12 +102,15 @@ export default async function Home() {
                 <p className="text-dim">Kitchen’s empty.</p>
               ) : (
                 <div className="grid gap-3">
-                  {tools.map((item) => (
+                  {menu.map((item) => (
                     <Link key={item.id} href={`/l/${item.slug}`} className="ticket p-4 block no-underline">
                       <div className="font-mono text-[11px] text-dim">#{padTicket(item.number)}</div>
                       <div className="display text-xl font-semibold">{item.name}</div>
                       <p className="text-sm mt-1 text-dim line-clamp-2">{item.oneLiner}</p>
-                      <p className="font-mono text-[11px] text-mark mt-2">{tagList(item.tags).join(" · ")}</p>
+                      <p className="font-mono text-[11px] text-mark mt-2">
+                        {item.claimed ? "claimed" : "unclaimed"}
+                        {item.tags ? ` · ${tagList(item.tags).join(" · ")}` : ""}
+                      </p>
                     </Link>
                   ))}
                 </div>
@@ -119,10 +125,7 @@ export default async function Home() {
     );
   }
 
-  const board = await prisma.listing.findMany({
-    orderBy: { number: "asc" },
-    take: PREVIEW,
-  });
+  const board = menuSort(await prisma.listing.findMany()).slice(0, PREVIEW);
   return (
     <Stage label="Front of house">
       <p className="display text-[12px] tracking-[0.22em] text-mark mb-4">OPEN TOOL CAFE</p>
@@ -149,7 +152,7 @@ export default async function Home() {
       <div className="flex items-end justify-between mb-4">
         <h2 className="display text-2xl">The menu</h2>
         <Link href="/find" className="btn sm:w-auto no-underline">
-          Join for full menu
+          Full menu
         </Link>
       </div>
       <div className="grid md:grid-cols-2 gap-3">
@@ -158,7 +161,10 @@ export default async function Home() {
             <div className="font-mono text-[11px] text-dim">#{padTicket(item.number)}</div>
             <div className="display text-xl font-semibold">{item.name}</div>
             <p className="text-sm mt-1 text-dim line-clamp-2">{item.oneLiner}</p>
-            <p className="font-mono text-[11px] text-mark mt-2">{tagList(item.tags).join(" · ")}</p>
+            <p className="font-mono text-[11px] text-mark mt-2">
+              {item.claimed ? "claimed" : "unclaimed"}
+              {item.tags ? ` · ${tagList(item.tags).join(" · ")}` : ""}
+            </p>
           </Link>
         ))}
       </div>

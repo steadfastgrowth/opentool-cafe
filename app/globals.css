@@ -606,13 +606,53 @@ label.lbl {
     box-shadow: none;
   }
 
+  .nav-search-wrap {
+    display: none;
+  }
+
   .btn {
+    width: auto;
+  }
+
+  .flex-col > .btn,
+  .flex-col > a.btn {
     width: 100%;
   }
 
   .stage {
     border-left: 0;
     border-right: 0;
+  }
+
+  .tty-screen {
+    min-height: min(62dvh, 28rem);
+  }
+
+  .tty-bar {
+    flex-wrap: wrap;
+    text-transform: none;
+    letter-spacing: 0.04em;
+    gap: 0.35rem 0.75rem;
+  }
+
+  .tty-row,
+  .tty-line {
+    grid-template-columns: 3rem 1fr;
+    grid-template-areas:
+      "time who"
+      "body body";
+  }
+
+  .tty-time {
+    grid-area: time;
+  }
+
+  .tty-who {
+    grid-area: who;
+  }
+
+  .tty-body {
+    grid-area: body;
   }
 }
 
