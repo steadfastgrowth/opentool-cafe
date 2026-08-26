@@ -77,7 +77,7 @@ export default async function YouPage({
       {q.ok === "meet" && <p>Meeting request stored.</p>}
       {q.ok === "password" && <p>Password saved.</p>}
       {q.err === "password" && <p>Password needs at least 8 characters.</p>}
-      {q.err === "photo" && <p>Photo needs to be a jpg/png/webp under 3MB. Uploads may not persist on this host yet.</p>}
+      {q.err === "photo" && <p>Photo needs to be a jpg/png/webp under 3MB.</p>}
 
       <section id="desk" className="ticket p-6">
         <h2 className="display text-xl mb-4">Desk</h2>

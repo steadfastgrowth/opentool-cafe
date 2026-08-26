@@ -19,6 +19,12 @@
       "database_id": "c867ef26-b470-4210-b095-77b654c3250f"
     }
   ],
+  "r2_buckets": [
+    {
+      "binding": "AVATARS",
+      "bucket_name": "opentool-cafe-avatars"
+    }
+  ],
   "observability": { "enabled": true },
   "routes": [
     { "pattern": "opentool.cafe/*", "zone_name": "opentool.cafe" },

@@ -403,17 +403,13 @@ export async function uploadAvatar(formData: FormData) {
   const buf = Buffer.from(await file.arrayBuffer());
   const kind = sniffImage(buf);
   if (!kind) redirect("/you?err=photo");
-  try {
-    const { mkdir, writeFile } = await import("fs/promises");
-    const { join } = await import("path");
-    const dir = join(process.cwd(), "public", "uploads", "avatars");
-    await mkdir(dir, { recursive: true });
-    const rel = `/uploads/avatars/${me.id}.${kind}`;
-    await writeFile(join(process.cwd(), "public", rel), buf);
-    await prisma.user.update({ where: { id: me.id }, data: { avatarUrl: rel } });
-  } catch {
-    redirect("/you?err=photo");
-  }
+  const { getAvatars } = await import("@/lib/r2");
+  const bucket = await getAvatars();
+  if (!bucket) redirect("/you?err=photo");
+  const key = `${me.id}.${kind}`;
+  const types = { jpg: "image/jpeg", png: "image/png", webp: "image/webp" } as const;
+  await bucket.put(key, buf, { httpMetadata: { contentType: types[kind] } });
+  await prisma.user.update({ where: { id: me.id }, data: { avatarUrl: `/a/${key}` } });
   revalidatePath("/you");
   revalidatePath(`/u/${me.slug}`);
   redirect("/you");
