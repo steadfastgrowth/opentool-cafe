@@ -4,8 +4,11 @@ import { getPrisma } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth";
 import { sendDirectMessage } from "@/app/actions";
 import { Stage } from "@/components/stage";
-import { Avatar } from "@/components/avatar";
 import { RefreshMail } from "@/components/refresh-mail";
+
+function hhmm(d: Date) {
+  return d.toISOString().slice(11, 16);
+}
 
 export default async function MailThreadPage({
   params,
@@ -45,37 +48,32 @@ export default async function MailThreadPage({
   return (
     <Stage label="Mail" wide={false}>
       <RefreshMail />
-      <Link href="/mail" className="text-sm text-dim">
-        ← mail
-      </Link>
-      <div className="flex items-center gap-3 mt-4 mb-8">
-        <Avatar name={person.name || person.slug} src={person.avatarUrl} size={56} />
-        <div>
-          <h1 className="display text-3xl">{person.name || person.slug}</h1>
-          <Link href={`/u/${person.slug}`} className="font-mono text-[11px] text-mark">
-            @{person.slug}
-          </Link>
-        </div>
-      </div>
-      <div className="grid gap-3 mb-8">
-        {messages.length === 0 && <p className="text-dim">No notes yet.</p>}
+      <p className="font-mono text-[11px] text-dim">
+        $ talk @{person.slug}{" "}
+        <Link href="/mail">exit</Link>
+        {" · "}
+        <Link href={`/u/${person.slug}`}>profile</Link>
+      </p>
+      <div className="tty mt-6 mb-2">
+        {messages.length === 0 && <p className="text-dim">no traffic yet.</p>}
         {messages.map((m: { id: string; body: string; fromUserId: string; createdAt: Date }) => (
-          <div key={m.id} className="ticket p-4">
-            <p className="font-mono text-[11px] text-dim">{m.fromUserId === me.id ? "you" : `@${person.slug}`}</p>
-            <p className="mt-2 whitespace-pre-wrap">{m.body}</p>
+          <div key={m.id} className="tty-line">
+            <span className="tty-time">{hhmm(m.createdAt)}</span>
+            <span className="tty-who">{m.fromUserId === me.id ? "you>" : `@${person.slug}>`}</span>
+            <span>{m.body}</span>
           </div>
         ))}
       </div>
-      {q.err === "fields" && <p className="mb-3">Need a note, under 2000 characters.</p>}
-      {q.err === "rate" && <p className="mb-3">Too many notes. Wait a few minutes.</p>}
-      <form action={sendDirectMessage} className="ticket p-5 space-y-3">
+      {q.err === "fields" && <p className="tty mb-2">need a line, under 2000.</p>}
+      {q.err === "rate" && <p className="tty mb-2">rate limit. wait.</p>}
+      <form action={sendDirectMessage} className="tty-prompt">
         <input type="hidden" name="slug" value={person.slug} />
-        <label className="lbl" htmlFor="dm-body">
-          note
+        <label className="tty-who shrink-0" htmlFor="dm-body">
+          you$
         </label>
-        <textarea id="dm-body" name="body" className="field" rows={4} required maxLength={2000} />
-        <button className="btn sm:w-auto" type="submit">
-          Send
+        <input id="dm-body" name="body" className="field" required maxLength={2000} autoComplete="off" />
+        <button className="btn btn-ghost" type="submit">
+          enter
         </button>
       </form>
     </Stage>

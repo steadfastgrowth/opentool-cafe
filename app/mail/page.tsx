@@ -3,7 +3,10 @@ import { redirect } from "next/navigation";
 import { getPrisma } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth";
 import { Stage } from "@/components/stage";
-import { Avatar } from "@/components/avatar";
+
+function hhmm(d: Date) {
+  return d.toISOString().slice(11, 16);
+}
 
 export default async function MailPage() {
   const prisma = await getPrisma();
@@ -20,10 +23,9 @@ export default async function MailPage() {
   const seen = new Set<string>();
   const threads: {
     slug: string;
-    name: string;
-    avatarUrl: string | null;
     preview: string;
     unread: number;
+    at: Date;
   }[] = [];
 
   for (const row of rows) {
@@ -35,33 +37,28 @@ export default async function MailPage() {
     });
     threads.push({
       slug: other.slug,
-      name: other.name || other.slug,
-      avatarUrl: other.avatarUrl,
       preview: row.body,
       unread,
+      at: row.createdAt,
     });
   }
 
   return (
     <Stage label="Mail" wide={false}>
-      <h1 className="display text-4xl mb-3">Mail</h1>
-      <p className="text-dim mb-8">Notes between regulars. Open a profile to start one.</p>
+      <p className="font-mono text-[11px] text-dim mb-6">$ ls ~/mail</p>
       {threads.length === 0 ? (
-        <p className="text-dim">
-          Empty. <Link href="/people">People</Link>
+        <p className="tty text-dim">
+          empty. <Link href="/people">people</Link>
         </p>
       ) : (
-        <div className="grid gap-3">
+        <div className="tty">
           {threads.map((t) => (
-            <Link key={t.slug} href={`/mail/${t.slug}`} className="ticket p-4 flex gap-3 no-underline items-start">
-              <Avatar name={t.name} src={t.avatarUrl} size={48} />
-              <div className="min-w-0">
-                <div className="display text-xl">
-                  {t.name}
-                  {t.unread > 0 ? ` · ${t.unread}` : ""}
-                </div>
-                <p className="text-sm text-dim line-clamp-2 mt-1">{t.preview}</p>
-              </div>
+            <Link key={t.slug} href={`/mail/${t.slug}`} className="tty-row no-underline">
+              <span className="tty-time">{hhmm(t.at)}</span>
+              <span className="tty-who">
+                {t.unread > 0 ? `*@${t.slug}` : `@${t.slug}`}
+              </span>
+              <span className="line-clamp-1">{t.preview}</span>
             </Link>
           ))}
         </div>

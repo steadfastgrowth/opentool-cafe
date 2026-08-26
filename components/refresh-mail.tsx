@@ -9,7 +9,7 @@ export function RefreshMail() {
     const tick = window.setInterval(() => {
       if (document.hidden) return;
       const note = document.getElementById("dm-body");
-      if (note instanceof HTMLTextAreaElement) {
+      if (note instanceof HTMLInputElement || note instanceof HTMLTextAreaElement) {
         if (document.activeElement === note) return;
         if (note.value.trim()) return;
       }
