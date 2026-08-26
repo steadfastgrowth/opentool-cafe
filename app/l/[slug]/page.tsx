@@ -44,15 +44,19 @@ export default async function ListingPage({
       <p className="text-lg mt-3">{listing.oneLiner}</p>
       <p className="text-sm text-mute mt-2">{tagList(listing.tags).join(" · ")}</p>
       <p className="mt-4">{listing.body}</p>
-      {listing.owner && (
-        <p className="mt-4 text-sm">
-          Listed by{" "}
-          <Link className="underline" href={`/u/${listing.owner.slug}`}>
-            {listing.owner.name || listing.owner.slug}
-          </Link>
-          {listing.claimed ? " · claimed" : " · unclaimed github"}
-        </p>
-      )}
+      <p className="mt-4 text-sm">
+        {listing.owner ? (
+          <>
+            Listed by{" "}
+            <Link className="underline" href={`/u/${listing.owner.slug}`}>
+              {listing.owner.name || listing.owner.slug}
+            </Link>
+            {listing.claimed ? " · claimed" : " · unclaimed"}
+          </>
+        ) : (
+          "unclaimed"
+        )}
+      </p>
       {q.err === "github" && (
         <p className="mt-3 text-sm" style={{ color: "var(--bad)" }}>
           GitHub handle on the profile has to match the repo owner.

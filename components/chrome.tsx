@@ -8,12 +8,14 @@ export async function Chrome({
   avatarUrl,
   name,
   mailUnread = 0,
+  deskUnread = 0,
 }: {
   signedIn: boolean;
   slug: string | null;
   avatarUrl?: string | null;
   name?: string | null;
   mailUnread?: number;
+  deskUnread?: number;
 }) {
   const links = signedIn
     ? ([
@@ -89,6 +91,11 @@ export async function Chrome({
                 <Link className="nav-link py-2" href="/search">
                   search
                 </Link>
+                {signedIn && slug ? (
+                  <Link className="nav-link py-2" href="/you#desk">
+                    {deskUnread > 0 ? `desk · ${deskUnread}` : "desk"}
+                  </Link>
+                ) : null}
                 {signedIn && slug ? (
                   <Link className="nav-link py-2" href="/you">
                     edit profile

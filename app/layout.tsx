@@ -77,9 +77,13 @@ export default async function RootLayout({
 }>) {
   const me = await getSessionUser();
   let mailUnread = 0;
+  let deskUnread = 0;
   if (me) {
     const prisma = await getPrisma();
     mailUnread = await prisma.directMessage.count({
+      where: { toUserId: me.id, readAt: null },
+    });
+    deskUnread = await prisma.notice.count({
       where: { toUserId: me.id, readAt: null },
     });
   }
@@ -95,6 +99,7 @@ export default async function RootLayout({
           avatarUrl={me?.avatarUrl}
           name={me?.name}
           mailUnread={mailUnread}
+          deskUnread={deskUnread}
         />
         <div id="content">{children}</div>
         <Footer />

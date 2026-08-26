@@ -41,6 +41,9 @@ export default async function FindPage({
   return (
     <Stage label="The menu">
       <h1 className="display text-4xl mb-6">The menu</h1>
+      <p className="mb-6">
+        <Link href="/list">List a repo</Link>
+      </p>
       <form className="flex flex-col sm:flex-row gap-3 mb-4 max-w-lg" role="search">
         <label className="sr-only" htmlFor="menu-q">
           Search the menu
@@ -70,7 +73,10 @@ export default async function FindPage({
             <div className="font-mono text-[11px] text-dim">#{padTicket(item.number)}</div>
             <div className="display text-xl font-semibold">{item.name}</div>
             <p className="text-sm mt-1 text-dim line-clamp-2">{item.oneLiner}</p>
-            <p className="font-mono text-[11px] text-mark mt-2">{tagList(item.tags).join(" · ")}</p>
+            <p className="font-mono text-[11px] text-mark mt-2">
+              {item.claimed ? "claimed" : "unclaimed"}
+              {item.tags ? ` · ${tagList(item.tags).join(" · ")}` : ""}
+            </p>
           </Link>
         ))}
       </div>
