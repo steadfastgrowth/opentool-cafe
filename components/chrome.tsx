@@ -31,11 +31,13 @@ export async function Chrome({
         { href: "/tip", label: "tip" },
       ] as const);
   const prisma = await getPrisma();
-  const board = menuSort(await prisma.listing.findMany({ take: 40 })).slice(0, 12);
-  const items = [
-    "now serving",
-    ...board.map((b: { number: number; name: string }) => `#${String(b.number).padStart(3, "0")} ${b.name}`),
-  ];
+  const raw = (await prisma.listing.findMany({ take: 40 })) as {
+    number: number;
+    name: string;
+    claimed: boolean;
+  }[];
+  const board = menuSort(raw).slice(0, 12);
+  const items = ["now serving", ...board.map((b) => `#${String(b.number).padStart(3, "0")} ${b.name}`)];
   const loop = [...items, ...items];
   return (
     <header className="sticky top-0 z-40">
