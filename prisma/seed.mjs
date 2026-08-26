@@ -139,63 +139,6 @@ async function main() {
       },
     });
   }
-
-  const ada = await prisma.user.upsert({
-    where: { email: "ada@opentool.cafe" },
-    update: {},
-    create: {
-      email: "ada@opentool.cafe",
-      name: "Ada",
-      slug: "ada",
-      bio: "Local models and kitchen-table hardware.",
-      offering: "Ollama setups, eval harnesses",
-      lookingFor: "someone to design a landing page",
-      skills: "python, mlx, rust",
-      takesMeetings: true,
-    },
-  });
-  const gus = await prisma.user.upsert({
-    where: { email: "gus@opentool.cafe" },
-    update: {},
-    create: {
-      email: "gus@opentool.cafe",
-      name: "Gus",
-      slug: "gus",
-      bio: "I ship Saturday projects.",
-      offering: "Next.js, Stripe, ugly-but-live MVPs",
-      lookingFor: "a hardware person for a cafe kiosk",
-      skills: "typescript, prisma",
-    },
-  });
-
-  const existing = await prisma.post.count();
-  if (existing === 0) {
-    await prisma.post.createMany({
-      data: [
-        {
-          authorId: ada.id,
-          kind: "help",
-          title: "Need a second pair of eyes on a local RAG box",
-          body: "I have Gemma on a Mini. Retrieval is messy. Looking for someone who has actually shipped local RAG, not a tutorial.",
-          tags: "local-ai,rag",
-        },
-        {
-          authorId: gus.id,
-          kind: "collab",
-          title: "Wanted: hardware person for a cafe kiosk",
-          body: "Building a physical order-ticket printer that talks to this site. I can do the web. I cannot do the serial port.",
-          tags: "hardware,nextjs",
-        },
-        {
-          authorId: ada.id,
-          kind: "service",
-          title: "I'll stand up Ollama + Open WebUI on your LAN",
-          body: "One evening. You get a URL on Tailscale and a model that stays in the house.",
-          tags: "ollama,self-hosted",
-        },
-      ],
-    });
-  }
 }
 
 main()

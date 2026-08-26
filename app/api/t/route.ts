@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { track } from "@/lib/track";
+import { clientIp } from "@/lib/request";
+import { rateLimit, WINDOW_1M } from "@/lib/rate-limit";
 
 const ALLOWED = new Set([
   "page_view",
@@ -13,6 +15,14 @@ const ALLOWED = new Set([
 ]);
 
 export async function POST(req: NextRequest) {
+  const ip = await clientIp();
+  const gated = await rateLimit(`track:ip:${ip}`, 40, WINDOW_1M);
+  if (!gated.ok) return new NextResponse(null, { status: 204 });
+  const origin = req.headers.get("origin") || "";
+  const app = process.env.APP_URL || "https://opentool.cafe";
+  if (origin && !origin.startsWith(app) && !origin.includes("opentool.cafe")) {
+    return new NextResponse(null, { status: 204 });
+  }
   let name = "page_view";
   let path: string | null = null;
   try {

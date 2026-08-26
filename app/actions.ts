@@ -15,6 +15,9 @@ import {
 import { sendLoginEmail } from "@/lib/mail";
 import { hashPassword, sixDigitCode, verifyPassword } from "@/lib/password";
 import { track } from "@/lib/track";
+import { clientIp } from "@/lib/request";
+import { rateLimit, WINDOW_15M } from "@/lib/rate-limit";
+import { parseHttpUrl } from "@/lib/urls";
 
 async function openSession(userId: string) {
   const prisma = await getPrisma();
@@ -31,12 +34,16 @@ async function openSession(userId: string) {
 
 export async function requestMagicLink(formData: FormData) {
   const prisma = await getPrisma();
+  const ip = await clientIp();
   const email = String(formData.get("email") || "")
     .trim()
     .toLowerCase();
   if (!email || !email.includes("@")) {
     redirect("/join?err=email");
   }
+  const ipOk = await rateLimit(`magic:ip:${ip}`, 8, WINDOW_15M);
+  const emOk = await rateLimit(`magic:email:${email}`, 5, WINDOW_15M);
+  if (!ipOk.ok || !emOk.ok) redirect("/join?err=rate");
   const optInBuilders = formData.get("optIn") === "on";
   const token = newToken();
   const code = sixDigitCode();
@@ -59,6 +66,9 @@ export async function requestMagicLink(formData: FormData) {
 
 export async function verifyLoginCode(formData: FormData) {
   const prisma = await getPrisma();
+  const ip = await clientIp();
+  const gated = await rateLimit(`code:ip:${ip}`, 12, WINDOW_15M);
+  if (!gated.ok) redirect("/join?err=rate");
   const email = String(formData.get("email") || "")
     .trim()
     .toLowerCase();
@@ -71,10 +81,10 @@ export async function verifyLoginCode(formData: FormData) {
     orderBy: { expiresAt: "desc" },
   });
   if (!row) redirect(`/join/sent?email=${encodeURIComponent(email)}&err=code`);
-  await consumeMagic(row.token, row.optIn);
+  await consumeMagic(row.token);
 }
 
-export async function consumeMagic(token: string, optIn: boolean) {
+export async function consumeMagic(token: string, _ignoredOpt?: boolean) {
   const prisma = await getPrisma();
   const row = await prisma.magicLink.findUnique({ where: { token } });
   if (!row || row.usedAt || row.expiresAt < new Date()) {
@@ -84,7 +94,7 @@ export async function consumeMagic(token: string, optIn: boolean) {
     where: { token },
     data: { usedAt: new Date() },
   });
-  const useOpt = optIn || row.optIn;
+  const useOpt = row.optIn;
   let user = await prisma.user.findUnique({ where: { email: row.email } });
   if (!user) {
     const local = row.email.split("@")[0];
@@ -109,6 +119,7 @@ export async function consumeMagic(token: string, optIn: boolean) {
 
 export async function registerWithPassword(formData: FormData) {
   const prisma = await getPrisma();
+  const ip = await clientIp();
   const email = String(formData.get("email") || "")
     .trim()
     .toLowerCase();
@@ -116,30 +127,23 @@ export async function registerWithPassword(formData: FormData) {
   const optInBuilders = formData.get("optIn") === "on";
   if (!email || !email.includes("@")) redirect("/join?err=email");
   if (password.length < 8) redirect("/join?err=password");
+  const gated = await rateLimit(`login:ip:${ip}`, 8, WINDOW_15M);
+  if (!gated.ok) redirect("/join?err=rate");
   const existing = await prisma.user.findUnique({ where: { email } });
-  if (existing?.passwordHash) redirect("/join?err=exists");
-  const passwordHash = await hashPassword(password);
-  let user = existing;
-  if (!user) {
-    const local = email.split("@")[0];
-    user = await prisma.user.create({
-      data: {
-        email,
-        slug: await uniqueUserSlug(local),
-        name: local,
-        passwordHash,
-        optInBuilders,
-      },
-    });
-  } else {
-    user = await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        passwordHash,
-        optInBuilders: optInBuilders || user.optInBuilders,
-      },
-    });
+  if (existing) {
+    redirect(existing.passwordHash ? "/join?err=exists" : "/join?err=usecode");
   }
+  const passwordHash = await hashPassword(password);
+  const local = email.split("@")[0];
+  const user = await prisma.user.create({
+    data: {
+      email,
+      slug: await uniqueUserSlug(local),
+      name: local,
+      passwordHash,
+      optInBuilders,
+    },
+  });
   await openSession(user.id);
   await track("join_password", { path: "/join", userId: user.id });
   redirect("/you");
@@ -147,11 +151,14 @@ export async function registerWithPassword(formData: FormData) {
 
 export async function loginWithPassword(formData: FormData) {
   const prisma = await getPrisma();
+  const ip = await clientIp();
   const email = String(formData.get("email") || "")
     .trim()
     .toLowerCase();
   const password = String(formData.get("password") || "");
   if (!email || !email.includes("@")) redirect("/join?err=email");
+  const gated = await rateLimit(`login:ip:${ip}`, 8, WINDOW_15M);
+  if (!gated.ok) redirect("/join?err=rate");
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user?.passwordHash || !(await verifyPassword(password, user.passwordHash))) {
     redirect("/join?err=login");
@@ -159,6 +166,17 @@ export async function loginWithPassword(formData: FormData) {
   await openSession(user.id);
   await track("join_password", { path: "/join", userId: user.id });
   redirect("/you");
+}
+
+export async function setPassword(formData: FormData) {
+  const prisma = await getPrisma();
+  const me = await getSessionUser();
+  if (!me) redirect("/join");
+  const password = String(formData.get("password") || "");
+  if (password.length < 8) redirect("/you?err=password");
+  const passwordHash = await hashPassword(password);
+  await prisma.user.update({ where: { id: me.id }, data: { passwordHash } });
+  redirect("/you?ok=password");
 }
 
 export async function logout() {
@@ -224,10 +242,13 @@ export async function listRepo(formData: FormData) {
   const oneLiner = String(formData.get("oneLiner") || "").trim();
   const tags = String(formData.get("tags") || "").trim() || "self-hosted";
   if (!name || !officialUrl || !oneLiner) redirect("/list?err=fields");
+  const parsed = parseHttpUrl(officialUrl);
+  if (!parsed) redirect("/list?err=fields");
+  const cleanUrl = parsed.toString();
   const slug = await uniqueListingSlug(slugify(name));
   const last = await prisma.listing.aggregate({ _max: { number: true } });
   const number = (last._max.number || 0) + 1;
-  const ownerPath = githubOwnerFromUrl(officialUrl);
+  const ownerPath = githubOwnerFromUrl(cleanUrl);
   const claimed = Boolean(
     ownerPath && me.githubHandle && ownerPath === me.githubHandle.toLowerCase()
   );
@@ -236,11 +257,11 @@ export async function listRepo(formData: FormData) {
       number,
       slug,
       name,
-      officialUrl,
+      officialUrl: cleanUrl,
       oneLiner,
       body: oneLiner,
       tags,
-      ownerId: claimed ? me.id : me.id,
+      ownerId: claimed ? me.id : null,
       claimed,
       offersMeetings: me.takesMeetings,
     },
@@ -332,21 +353,31 @@ export async function uploadAvatar(formData: FormData) {
   const file = formData.get("photo");
   if (!(file instanceof File) || file.size === 0) redirect("/you?err=photo");
   if (file.size > 3 * 1024 * 1024) redirect("/you?err=photo");
-  const type = file.type || "";
-  if (!["image/jpeg", "image/png", "image/webp", "image/gif"].includes(type)) {
+  const buf = Buffer.from(await file.arrayBuffer());
+  const kind = sniffImage(buf);
+  if (!kind) redirect("/you?err=photo");
+  try {
+    const { mkdir, writeFile } = await import("fs/promises");
+    const { join } = await import("path");
+    const dir = join(process.cwd(), "public", "uploads", "avatars");
+    await mkdir(dir, { recursive: true });
+    const rel = `/uploads/avatars/${me.id}.${kind}`;
+    await writeFile(join(process.cwd(), "public", rel), buf);
+    await prisma.user.update({ where: { id: me.id }, data: { avatarUrl: rel } });
+  } catch {
     redirect("/you?err=photo");
   }
-  const ext = type === "image/png" ? "png" : type === "image/webp" ? "webp" : type === "image/gif" ? "gif" : "jpg";
-  const { mkdir, writeFile } = await import("fs/promises");
-  const { join } = await import("path");
-  const dir = join(process.cwd(), "public", "uploads", "avatars");
-  await mkdir(dir, { recursive: true });
-  const rel = `/uploads/avatars/${me.id}.${ext}`;
-  await writeFile(join(process.cwd(), "public", rel), Buffer.from(await file.arrayBuffer()));
-  await prisma.user.update({ where: { id: me.id }, data: { avatarUrl: rel } });
   revalidatePath("/you");
   revalidatePath(`/u/${me.slug}`);
   redirect("/you");
+}
+
+function sniffImage(buf: Buffer): "jpg" | "png" | "webp" | null {
+  if (buf.length < 12) return null;
+  if (buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) return "jpg";
+  if (buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47) return "png";
+  if (buf.toString("ascii", 0, 4) === "RIFF" && buf.toString("ascii", 8, 12) === "WEBP") return "webp";
+  return null;
 }
 
 export async function createPost(formData: FormData) {

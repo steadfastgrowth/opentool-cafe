@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSessionUser, padTicket } from "@/lib/auth";
 import { getPrisma } from "@/lib/db";
-import { logout, saveProfile, uploadAvatar } from "@/app/actions";
+import { logout, saveProfile, uploadAvatar, setPassword } from "@/app/actions";
 import { Avatar } from "@/components/avatar";
 
 export default async function YouPage({
@@ -65,7 +65,9 @@ export default async function YouPage({
         </form>
       </div>
       {q.ok === "meet" && <p>Meeting request stored.</p>}
-      {q.err === "photo" && <p>Photo needs to be a jpg/png/webp under 3MB.</p>}
+      {q.ok === "password" && <p>Password saved.</p>}
+      {q.err === "password" && <p>Password needs at least 8 characters.</p>}
+      {q.err === "photo" && <p>Photo needs to be a jpg/png/webp under 3MB. Uploads may not persist on this host yet.</p>}
 
       <section className="ticket p-6">
         <h2 className="display text-xl mb-4">Photo</h2>
@@ -74,9 +76,23 @@ export default async function YouPage({
           <label className="lbl" htmlFor="you-photo">
             photo
           </label>
-          <input id="you-photo" name="photo" type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="field" />
+          <input id="you-photo" name="photo" type="file" accept="image/jpeg,image/png,image/webp" className="field" />
           <button className="btn sm:w-auto" type="submit">
             Upload photo
+          </button>
+        </form>
+      </section>
+
+      <section className="ticket p-6">
+        <h2 className="display text-xl mb-4">Password</h2>
+        <p className="text-sm text-dim mb-4">Set one after GitHub or a login code.</p>
+        <form action={setPassword} className="space-y-3">
+          <label className="lbl" htmlFor="you-password">
+            new password
+          </label>
+          <input id="you-password" name="password" type="password" className="field" minLength={8} autoComplete="new-password" />
+          <button className="btn sm:w-auto" type="submit">
+            Save password
           </button>
         </form>
       </section>
@@ -254,6 +270,9 @@ export default async function YouPage({
 
       <section>
         <h2 className="display text-2xl mb-3">People who took a tool</h2>
+        <p className="text-sm text-dim mb-3">
+          Email shows only with opt-in, for that listing. They can turn it off on /you.
+        </p>
         {inbox.length === 0 ? (
           <p className="text-dim">Empty.</p>
         ) : (

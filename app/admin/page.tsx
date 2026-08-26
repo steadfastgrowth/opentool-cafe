@@ -1,15 +1,20 @@
-import { cookies } from "next/headers";
 import { getPrisma } from "@/lib/db";
 import { redirect } from "next/navigation";
+import { adminPasswordOk, isAdmin, setAdminCookie } from "@/lib/admin";
+import { clientIp } from "@/lib/request";
+import { rateLimit, WINDOW_15M } from "@/lib/rate-limit";
 
 async function login(formData: FormData) {
   "use server";
+  const ip = await clientIp();
+  const gated = await rateLimit(`admin:ip:${ip}`, 8, WINDOW_15M);
+  if (!gated.ok) redirect("/admin?err=1");
   const password = String(formData.get("password") || "");
-  if (password !== (process.env.ADMIN_PASSWORD || "cafe-desk")) {
+  if (!adminPasswordOk(password)) {
     redirect("/admin?err=1");
   }
-  const jar = await cookies();
-  jar.set("opentool_admin", "1", { httpOnly: true, path: "/", maxAge: 60 * 60 * 12 });
+  const ok = await setAdminCookie();
+  if (!ok) redirect("/admin?err=1");
   redirect("/admin");
 }
 
@@ -19,8 +24,7 @@ export default async function AdminPage({
   searchParams: Promise<{ err?: string }>;
 }) {
   const q = await searchParams;
-  const jar = await cookies();
-  const ok = jar.get("opentool_admin")?.value === "1";
+  const ok = await isAdmin();
   if (!ok) {
     return (
       <main className="max-w-sm mx-auto px-5 py-16">
@@ -123,7 +127,7 @@ export default async function AdminPage({
       <ul className="text-sm space-y-1">
         {tips.map((t) => (
           <li key={t.id}>
-            ${t.amount} · {t.email || "anon"} · {t.note || ""}
+            ${t.amount} · {t.status} · {t.email || "anon"}
           </li>
         ))}
       </ul>

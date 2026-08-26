@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { getPrisma } from "./db";
 import { randomBytes } from "crypto";
+import { cookieSecure } from "./request";
 
 const COOKIE = "opentool_sid";
 const WEEK = 60 * 60 * 24 * 7;
@@ -30,12 +31,17 @@ export async function setSessionCookie(token: string) {
     sameSite: "lax",
     path: "/",
     maxAge: WEEK,
+    secure: cookieSecure(),
   });
 }
 
 export async function clearSessionCookie() {
   const prisma = await getPrisma();
   const jar = await cookies();
+  const token = jar.get(COOKIE)?.value;
+  if (token) {
+    await prisma.session.deleteMany({ where: { token } });
+  }
   jar.delete(COOKIE);
 }
 

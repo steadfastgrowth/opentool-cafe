@@ -2,11 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { getPrisma } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth";
 import { stripeForm, stripePublishable, stripeReady } from "@/lib/stripe";
+import { clientIp } from "@/lib/request";
+import { rateLimit, WINDOW_15M } from "@/lib/rate-limit";
 
 function centsFrom(amount: string, other: string) {
   const raw = amount === "other" ? other : amount;
   const n = Number(raw);
-  if (!Number.isFinite(n) || n < 1) return 0;
+  if (!Number.isFinite(n) || n < 1 || n > 500) return 0;
   return Math.round(n * 100);
 }
 
@@ -14,6 +16,9 @@ export async function POST(req: NextRequest) {
   if (!stripeReady()) {
     return NextResponse.json({ error: "stripe off" }, { status: 503 });
   }
+  const ip = await clientIp();
+  const gated = await rateLimit(`checkout:ip:${ip}`, 10, WINDOW_15M);
+  if (!gated.ok) return NextResponse.json({ error: "rate" }, { status: 429 });
   const body = (await req.json().catch(() => ({}))) as {
     amount?: string;
     otherAmount?: string;
@@ -71,9 +76,6 @@ export async function POST(req: NextRequest) {
       publishableKey: pk.startsWith("pk_") ? pk : null,
     });
   } catch (e) {
-    return NextResponse.json(
-      { error: e instanceof Error ? e.message : "checkout" },
-      { status: 502 },
-    );
+    return NextResponse.json({ error: "checkout" }, { status: 502 });
   }
 }

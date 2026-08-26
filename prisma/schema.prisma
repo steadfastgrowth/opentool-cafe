@@ -158,3 +158,9 @@ model Event {
   userId    String?
   createdAt DateTime @default(now())
 }
+
+model RateLimit {
+  key     String   @id
+  count   Int
+  resetAt DateTime
+}

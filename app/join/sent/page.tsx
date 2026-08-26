@@ -11,7 +11,7 @@ export default async function SentPage({
     <main className="max-w-md mx-auto px-5 py-16">
       <h1 className="display text-4xl mb-4">Check your email</h1>
       <p className="mb-6">
-        We sent a 6-digit code{email ? ` to ${email}` : ""}. Same mail has a login link.
+        A 6-digit code is on the way{email ? ` to ${email}` : ""}. Same mail has a login link.
       </p>
       {q.err === "code" && (
         <p className="text-sm mb-3" style={{ color: "var(--bad)" }}>

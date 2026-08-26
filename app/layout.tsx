@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from "next";
 import { Chakra_Petch, IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import { Chrome } from "@/components/chrome";
+import { Footer } from "@/components/footer";
 import { TrackPage } from "@/components/track-page";
 import { getSessionUser } from "@/lib/auth";
 
@@ -87,6 +88,7 @@ export default async function RootLayout({
           name={me?.name}
         />
         <div id="content">{children}</div>
+        <Footer />
         <Suspense fallback={null}>
           <TrackPage />
         </Suspense>
