@@ -12,8 +12,6 @@ npx prisma db seed
 npm run dev
 ```
 
-http://127.0.0.1:4330
-
 Local login: join with email, then click the link on the next page (`AUTH_DEV_REVEAL=1`). Mail is not wired.
 
 Admin desk: `/admin` password from `ADMIN_PASSWORD`.
