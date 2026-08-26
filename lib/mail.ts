@@ -42,7 +42,7 @@ export async function sendLeadNotice(opts: {
 }) {
   const origin = appUrl();
   const text = [
-    `${opts.fromName} took ${opts.listingName} and opted in.`,
+    `${opts.fromName} ordered ${opts.listingName} and opted in.`,
     "",
     `Profile: ${origin}/u/${opts.fromSlug}`,
     `Email: ${opts.fromEmail}`,
@@ -53,7 +53,7 @@ export async function sendLeadNotice(opts: {
   ].join("\n");
   await sendTextMail({
     to: opts.to,
-    subject: `Take on ${opts.listingName}`,
+    subject: `Order on ${opts.listingName}`,
     text,
   });
 }

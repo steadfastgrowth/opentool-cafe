@@ -140,7 +140,7 @@ export default async function ProfilePage({
         </ul>
       )}
 
-      <h2 className="display text-2xl mb-3">Taken</h2>
+      <h2 className="display text-2xl mb-3">Ordered</h2>
       {person.takes.length === 0 ? (
         <p className="text-dim">None.</p>
       ) : (

@@ -261,7 +261,7 @@ export default async function YouPage({
       </section>
 
       <section>
-        <h2 className="display text-2xl mb-3">Taken</h2>
+        <h2 className="display text-2xl mb-3">Ordered</h2>
         {takes.length === 0 ? (
           <p className="text-dim">
             None yet. <Link href="/find">Menu</Link>
@@ -300,7 +300,7 @@ export default async function YouPage({
       </section>
 
       <section>
-        <h2 className="display text-2xl mb-3">People who took a tool</h2>
+        <h2 className="display text-2xl mb-3">People who ordered</h2>
         <p className="text-sm text-dim mb-3">
           Email shows only with opt-in, for that listing. They can turn it off on /you.
         </p>

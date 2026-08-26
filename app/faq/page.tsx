@@ -7,7 +7,7 @@ export default function FaqPage() {
       <dl className="space-y-6">
         <div>
           <dt className="display text-xl">What is the menu?</dt>
-          <dd className="text-dim mt-1">Open source tools you can take and run. That is the point of the cafe.</dd>
+          <dd className="text-dim mt-1">Open source tools you can order and run. That is the point of the cafe.</dd>
         </div>
         <div>
           <dt className="display text-xl">What is the board?</dt>

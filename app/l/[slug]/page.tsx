@@ -72,12 +72,12 @@ export default async function ListingPage({
         {me ? (
           <form action={takeListing.bind(null, listing.id)}>
             <button className="btn" type="submit">
-              {alreadyTook ? "Open again" : "Take"}
+              {alreadyTook ? "Order again" : "Order"}
             </button>
           </form>
         ) : (
           <Link className="btn" href="/join">
-            Take
+            Order
           </Link>
         )}
         <a className="btn btn-ghost" href={`/out/${listing.slug}`} target="_blank" rel="noreferrer">

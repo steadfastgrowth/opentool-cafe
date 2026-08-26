@@ -21,7 +21,7 @@ export default function PrivacyPage() {
           advertising profile.
         </li>
         <li>
-          Optional opt-in so builders of tools you take can email, message, or call. Off anytime on{" "}
+          Optional opt-in so builders of tools you order can email, message, or call. Off anytime on{" "}
           <Link href="/you">/you</Link>. Phone is not on the public profile.
         </li>
         <li>
