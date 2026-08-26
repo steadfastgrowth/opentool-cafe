@@ -1,0 +1,114 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String   @id @default(cuid())
+  email          String   @unique
+  name           String?
+  slug           String   @unique
+  bio            String?
+  phone          String?
+  github         String?
+  x              String?
+  huggingface    String?
+  linkedin       String?
+  website        String?
+  githubHandle   String?
+  optInBuilders  Boolean  @default(false)
+  takesMeetings  Boolean  @default(false)
+  calendarUrl    String?
+  createdAt      DateTime @default(now())
+
+  sessions      Session[]
+  listings      Listing[] @relation("OwnedListings")
+  takes         Take[]
+  meetingsFrom  MeetingRequest[] @relation("MeetFrom")
+  meetingsTo    MeetingRequest[] @relation("MeetTo")
+  tips          Tip[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+}
+
+model MagicLink {
+  token     String    @id
+  email     String
+  expiresAt DateTime
+  usedAt    DateTime?
+}
+
+model Listing {
+  id             String   @id @default(cuid())
+  number         Int      @unique
+  slug           String   @unique
+  name           String
+  officialUrl    String
+  oneLiner       String
+  body           String
+  tags           String
+  ownerId        String?
+  owner          User?    @relation("OwnedListings", fields: [ownerId], references: [id])
+  claimed        Boolean  @default(false)
+  offersMeetings Boolean  @default(false)
+  createdAt      DateTime @default(now())
+
+  clicks   Click[]
+  takes    Take[]
+  meetings MeetingRequest[]
+}
+
+model Click {
+  id        String   @id @default(cuid())
+  listingId String
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  userId    String?
+  referrer  String?
+  createdAt DateTime @default(now())
+}
+
+model Take {
+  id        String   @id @default(cuid())
+  listingId String
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  optedIn   Boolean
+  createdAt DateTime @default(now())
+
+  @@unique([listingId, userId])
+}
+
+model MeetingRequest {
+  id         String   @id @default(cuid())
+  listingId  String?
+  listing    Listing? @relation(fields: [listingId], references: [id])
+  fromUserId String
+  fromUser   User     @relation("MeetFrom", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUserId   String
+  toUser     User     @relation("MeetTo", fields: [toUserId], references: [id], onDelete: Cascade)
+  kind       String
+  note       String?
+  status     String   @default("new")
+  createdAt  DateTime @default(now())
+}
+
+model Tip {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  email     String?
+  amount    String
+  note      String?
+  createdAt DateTime @default(now())
+}
