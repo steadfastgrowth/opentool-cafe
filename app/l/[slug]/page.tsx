@@ -2,8 +2,9 @@ import { Link } from "@/components/link";
 import { notFound } from "next/navigation";
 import { getPrisma } from "@/lib/db";
 import { getSessionUser, padTicket, tagList, githubOwnerFromUrl } from "@/lib/auth";
-import { bookMeeting, claimListing, takeListing } from "@/app/actions";
+import { claimListing, takeListing } from "@/app/actions";
 import { JoinForm } from "@/components/join-form";
+import { BookMeeting } from "@/components/book-meeting";
 
 export default async function ListingPage({
   params,
@@ -98,23 +99,8 @@ export default async function ListingPage({
         </div>
       )}
 
-      {listing.owner && listing.owner.takesMeetings && me && me.id !== listing.owner.id && (
-        <form action={bookMeeting} className="ticket p-6 mt-10 space-y-3 max-w-md">
-          <h2 className="display text-xl">Book a meeting</h2>
-          <input type="hidden" name="toUserId" value={listing.owner.id} />
-          <input type="hidden" name="listingId" value={listing.id} />
-          <select name="kind" className="field" id="meet-kind" aria-label="Meeting type">
-            <option value="buy">Need help installing</option>
-            <option value="sell">Offer to install</option>
-          </select>
-          <label className="lbl" htmlFor="meet-note">
-            note
-          </label>
-          <textarea id="meet-note" name="note" className="field" rows={3} />
-          <button className="btn" type="submit">
-            Book
-          </button>
-        </form>
+      {listing.owner && (
+        <BookMeeting host={listing.owner} meId={me?.id ?? null} listingId={listing.id} listingCopy />
       )}
     </main>
   );

@@ -3,9 +3,9 @@ import { Link } from "@/components/link";
 import { notFound } from "next/navigation";
 import { getPrisma } from "@/lib/db";
 import { getSessionUser, padTicket } from "@/lib/auth";
-import { bookMeeting } from "@/app/actions";
 import { Avatar } from "@/components/avatar";
 import { FollowButton } from "@/components/follow-button";
+import { BookMeeting } from "@/components/book-meeting";
 
 function ext(href: string | null, label: string) {
   if (!href) return null;
@@ -153,26 +153,7 @@ export default async function ProfilePage({
         </ul>
       )}
 
-      {person.takesMeetings && me && me.id !== person.id && (
-        <form action={bookMeeting} className="ticket p-6 mt-10 space-y-3 max-w-md">
-          <h2 className="display text-xl">Book a meeting</h2>
-          <input type="hidden" name="toUserId" value={person.id} />
-          <label className="lbl" htmlFor="profile-meet-kind">
-            kind
-          </label>
-          <select id="profile-meet-kind" name="kind" className="field">
-            <option value="buy">Need help</option>
-            <option value="sell">Offer help</option>
-          </select>
-          <label className="lbl" htmlFor="profile-meet-note">
-            note
-          </label>
-          <textarea id="profile-meet-note" name="note" className="field" rows={3} />
-          <button className="btn" type="submit">
-            Book
-          </button>
-        </form>
-      )}
+      <BookMeeting host={person} meId={me?.id ?? null} />
     </main>
   );
 }

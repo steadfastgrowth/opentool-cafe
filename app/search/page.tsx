@@ -3,6 +3,7 @@ import { getPrisma } from "@/lib/db";
 import { padTicket } from "@/lib/auth";
 import { Avatar } from "@/components/avatar";
 import { Stage } from "@/components/stage";
+import { SearchBox } from "@/components/search-box";
 
 export default async function SearchPage({
   searchParams,
@@ -33,15 +34,9 @@ export default async function SearchPage({
   return (
     <Stage label="Search">
       <h1 className="display text-4xl mb-6">Search</h1>
-      <form action="/search" role="search" className="flex flex-col sm:flex-row gap-3 mb-8 max-w-lg">
-        <label className="sr-only" htmlFor="search-q">
-          Search
-        </label>
-        <input id="search-q" name="q" defaultValue={query} className="field" autoFocus placeholder="Search" />
-        <button className="btn sm:w-auto" type="submit">
-          Search
-        </button>
-      </form>
+      <div className="mb-8 max-w-lg search-page-box">
+        <SearchBox id="search-q" defaultValue={query} className="field" autoFocus />
+      </div>
 
       {!query && <p className="text-dim">Type a name, a tool, or a post.</p>}
 

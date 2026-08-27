@@ -2,6 +2,8 @@ import { Link } from "@/components/link";
 import { getPrisma } from "@/lib/db";
 import { Avatar } from "@/components/avatar";
 import { menuSort } from "@/lib/menu";
+import { MoreMenu } from "@/components/more-menu";
+import { SearchBox } from "@/components/search-box";
 
 export async function Chrome({
   signedIn,
@@ -64,12 +66,9 @@ export async function Chrome({
         </div>
 
         <div className="nav-end">
-          <form action="/search" role="search" className="nav-search-wrap">
-            <label className="sr-only" htmlFor="nav-q">
-              Search
-            </label>
-            <input id="nav-q" name="q" className="nav-search" placeholder="Search" />
-          </form>
+          <div className="nav-search-wrap">
+            <SearchBox id="nav-q" className="nav-search" />
+          </div>
           {signedIn && slug ? (
             <Link href={`/u/${slug}`} className="nav-avatar" aria-label="Your public profile">
               <Avatar name={name || slug} src={avatarUrl} size={32} />
@@ -79,37 +78,30 @@ export async function Chrome({
               join
             </Link>
           )}
-          <details className="nav-more">
-            <summary className="mobile-menu-btn" aria-label="Open more">
-              more
-            </summary>
-            <div className="mobile-drawer">
-              <nav className="flex flex-col" aria-label="Mobile">
-                {links.map((l) => (
-                  <Link key={l.href} className="nav-link py-2" href={l.href}>
-                    {l.href === "/mail" && mailUnread > 0 ? `mail · ${mailUnread}` : l.label}
-                  </Link>
-                ))}
-                <Link className="nav-link py-2" href="/search">
-                  search
-                </Link>
-                {signedIn && slug ? (
-                  <Link className="nav-link py-2" href="/you#desk">
-                    {deskUnread > 0 ? `desk · ${deskUnread}` : "desk"}
-                  </Link>
-                ) : null}
-                {signedIn && slug ? (
-                  <Link className="nav-link py-2" href="/you">
-                    edit profile
-                  </Link>
-                ) : (
-                  <Link className="nav-link py-2" href="/join">
-                    join
-                  </Link>
-                )}
-              </nav>
-            </div>
-          </details>
+          <MoreMenu>
+            {links.map((l) => (
+              <Link key={l.href} className="nav-link py-2" href={l.href}>
+                {l.href === "/mail" && mailUnread > 0 ? `mail · ${mailUnread}` : l.label}
+              </Link>
+            ))}
+            <Link className="nav-link py-2" href="/search">
+              search
+            </Link>
+            {signedIn && slug ? (
+              <Link className="nav-link py-2" href="/you#desk">
+                {deskUnread > 0 ? `desk · ${deskUnread}` : "desk"}
+              </Link>
+            ) : null}
+            {signedIn && slug ? (
+              <Link className="nav-link py-2" href="/you">
+                edit profile
+              </Link>
+            ) : (
+              <Link className="nav-link py-2" href="/join">
+                join
+              </Link>
+            )}
+          </MoreMenu>
         </div>
       </div>
       <div className="marquee" aria-hidden>

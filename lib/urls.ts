@@ -33,3 +33,24 @@ export function hostAllowed(raw: string) {
   if (host.endsWith(".gitlab.io")) return true;
   return false;
 }
+
+function bookingHost(host: string) {
+  return (
+    host === "calendly.com" ||
+    host.endsWith(".calendly.com") ||
+    host === "cal.com" ||
+    host.endsWith(".cal.com") ||
+    host === "calendar.app.google" ||
+    host === "calendar.google.com" ||
+    host === "meet.google.com" ||
+    host === "savvycal.com" ||
+    host.endsWith(".savvycal.com")
+  );
+}
+
+export function bookingUrl(raw: string | null | undefined) {
+  const u = parseHttpUrl(raw || "");
+  if (!u || u.protocol !== "https:") return null;
+  if (!bookingHost(u.hostname.toLowerCase())) return null;
+  return u.toString();
+}

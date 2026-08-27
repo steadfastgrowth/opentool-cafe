@@ -80,25 +80,36 @@ export default async function PostPage({
       <section className="mt-12">
         <h2 className="display text-2xl mb-4">Comments · {post.comments.length}</h2>
         {post.comments.length === 0 && <p className="text-dim mb-6">None yet.</p>}
-        <ul className="space-y-3 mb-8">
-          {post.comments.map((c: { id: string; body: string; user: { slug: string; name: string | null; avatarUrl: string | null } }) => (
-            <li key={c.id} className="ticket p-4">
-              <Link href={`/u/${c.user.slug}`} className="font-mono text-[11px] text-mark">
-                @{c.user.slug}
-              </Link>
-              <p className="mt-2 whitespace-pre-wrap">{c.body}</p>
-            </li>
-          ))}
+        <ul className="comment-list mb-8">
+          {post.comments.map(
+            (c: {
+              id: string;
+              body: string;
+              user: { slug: string; name: string | null; avatarUrl: string | null };
+            }) => (
+              <li key={c.id} className="comment">
+                <Link href={`/u/${c.user.slug}`} className="no-underline shrink-0">
+                  <Avatar name={c.user.name || c.user.slug} src={c.user.avatarUrl} size={36} />
+                </Link>
+                <div>
+                  <Link href={`/u/${c.user.slug}`} className="font-mono text-[11px] text-mark">
+                    @{c.user.slug}
+                  </Link>
+                  <p className="mt-1 whitespace-pre-wrap leading-relaxed">{c.body}</p>
+                </div>
+              </li>
+            ),
+          )}
         </ul>
         {q.err === "comment" && <p className="mb-3">Need a comment, under 2000 characters.</p>}
         {q.err === "rate" && <p className="mb-3">Too many comments. Wait a few minutes.</p>}
         {me ? (
-          <form action={addComment} className="ticket p-5 space-y-3">
+          <form action={addComment} className="comment-form space-y-3">
             <input type="hidden" name="postId" value={post.id} />
             <label className="lbl" htmlFor="comment-body">
               comment
             </label>
-            <textarea id="comment-body" name="body" className="field" rows={4} required maxLength={2000} />
+            <textarea id="comment-body" name="body" className="field" rows={3} required maxLength={2000} />
             <button className="btn sm:w-auto" type="submit">
               Post comment
             </button>

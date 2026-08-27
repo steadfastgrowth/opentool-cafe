@@ -219,7 +219,13 @@ export default async function YouPage({
             <label className="lbl" htmlFor="you-cal">
               calendar
             </label>
-            <input id="you-cal" name="calendarUrl" className="field" defaultValue={me.calendarUrl || ""} />
+            <input
+              id="you-cal"
+              name="calendarUrl"
+              className="field"
+              defaultValue={me.calendarUrl || ""}
+              placeholder="https://calendly.com/you"
+            />
           </div>
           <label className="flex gap-2 text-sm">
             <input type="checkbox" name="takesMeetings" defaultChecked={me.takesMeetings} />

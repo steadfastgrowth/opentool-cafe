@@ -18,7 +18,7 @@ import { hashPassword, sixDigitCode, verifyPassword } from "@/lib/password";
 import { track } from "@/lib/track";
 import { clientIp } from "@/lib/request";
 import { rateLimit, WINDOW_15M } from "@/lib/rate-limit";
-import { parseHttpUrl } from "@/lib/urls";
+import { bookingUrl, parseHttpUrl } from "@/lib/urls";
 import { notifyDesk } from "@/lib/notify";
 import { dropUnreadNotice, pingNotice } from "@/lib/notice";
 
@@ -212,7 +212,7 @@ export async function saveProfile(formData: FormData) {
   const huggingface = String(formData.get("huggingface") || "").trim() || null;
   const linkedin = String(formData.get("linkedin") || "").trim() || null;
   const website = String(formData.get("website") || "").trim() || null;
-  const calendarUrl = String(formData.get("calendarUrl") || "").trim() || null;
+  const calendarUrl = bookingUrl(String(formData.get("calendarUrl") || "").trim());
   const takesMeetings = formData.get("takesMeetings") === "on";
   const optInBuilders = formData.get("optIn") === "on";
   let slug = slugify(String(formData.get("slug") || me.slug));
