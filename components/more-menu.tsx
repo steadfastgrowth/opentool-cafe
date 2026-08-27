@@ -1,9 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 
 export function MoreMenu({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
 
   useEffect(() => {
     if (!open) return;
@@ -29,8 +35,8 @@ export function MoreMenu({ children }: { children: React.ReactNode }) {
         more
       </button>
       {open ? (
-        <div className="mobile-drawer">
-          <nav className="flex flex-col" aria-label="More" onClick={() => setOpen(false)}>
+        <div className="mobile-drawer" onClickCapture={() => setOpen(false)}>
+          <nav className="flex flex-col" aria-label="More">
             {children}
           </nav>
         </div>
