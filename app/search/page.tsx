@@ -4,6 +4,7 @@ import { padTicket } from "@/lib/auth";
 import { Avatar } from "@/components/avatar";
 import { Stage } from "@/components/stage";
 import { SearchBox } from "@/components/search-box";
+import { publicAuthorSelect, publicPersonSelect, type PublicPerson } from "@/lib/person";
 
 export default async function SearchPage({
   searchParams,
@@ -17,18 +18,33 @@ export default async function SearchPage({
 
   const [people, tools, posts] = query
     ? await Promise.all([
-        prisma.user.findMany({ orderBy: { createdAt: "desc" }, take: 80 }),
+        prisma.user.findMany({ orderBy: { createdAt: "desc" }, select: publicPersonSelect, take: 80 }),
         prisma.listing.findMany({ orderBy: { number: "asc" }, take: 80 }),
-        prisma.post.findMany({ orderBy: { createdAt: "desc" }, include: { author: true }, take: 80 }),
+        prisma.post.findMany({
+          orderBy: { createdAt: "desc" },
+          select: {
+            id: true,
+            title: true,
+            body: true,
+            tags: true,
+            kind: true,
+            author: { select: publicAuthorSelect },
+          },
+          take: 80,
+        }),
       ])
     : [[], [], []];
 
-  const peopleHit = people.filter((p) =>
+  const peopleHit = people.filter((p: PublicPerson) =>
     `${p.name || ""} ${p.slug} ${p.bio || ""} ${p.skills || ""} ${p.offering || ""}`.toLowerCase().includes(like),
   );
-  const toolHit = tools.filter((l) => `${l.name} ${l.oneLiner} ${l.tags} ${l.body}`.toLowerCase().includes(like));
-  const postHit = posts.filter((p) =>
-    `${p.title} ${p.body} ${p.tags} ${p.author.name || ""} ${p.author.slug}`.toLowerCase().includes(like),
+  const toolHit = tools.filter(
+    (l: { name: string; oneLiner: string; tags: string; body: string }) =>
+      `${l.name} ${l.oneLiner} ${l.tags} ${l.body}`.toLowerCase().includes(like),
+  );
+  const postHit = posts.filter(
+    (p: { title: string; body: string; tags: string; author: { name: string | null; slug: string } }) =>
+      `${p.title} ${p.body} ${p.tags} ${p.author.name || ""} ${p.author.slug}`.toLowerCase().includes(like),
   );
 
   return (
@@ -48,7 +64,7 @@ export default async function SearchPage({
               <p className="text-dim">None.</p>
             ) : (
               <div className="grid md:grid-cols-2 gap-3">
-                {peopleHit.map((p) => (
+                {peopleHit.map((p: PublicPerson) => (
                   <Link key={p.id} href={`/u/${p.slug}`} className="ticket p-4 flex gap-3 no-underline items-center">
                     <Avatar name={p.name || p.slug} src={p.avatarUrl} size={44} />
                     <div>
@@ -66,7 +82,7 @@ export default async function SearchPage({
               <p className="text-dim">None.</p>
             ) : (
               <div className="grid md:grid-cols-2 gap-3">
-                {toolHit.map((l) => (
+                {toolHit.map((l: { id: string; slug: string; number: number; name: string; oneLiner: string }) => (
                   <Link key={l.id} href={`/l/${l.slug}`} className="ticket p-4 block no-underline">
                     <div className="font-mono text-[11px] text-dim">#{padTicket(l.number)}</div>
                     <div className="display text-xl font-semibold">{l.name}</div>
@@ -82,7 +98,7 @@ export default async function SearchPage({
               <p className="text-dim">None.</p>
             ) : (
               <div className="grid md:grid-cols-2 gap-3">
-                {postHit.map((p) => (
+                {postHit.map((p: { id: string; kind: string; title: string; author: { slug: string } }) => (
                   <Link key={p.id} href={`/board/${p.id}`} className="ticket p-4 block no-underline">
                     <div className="font-mono text-[11px] text-dim">{p.kind}</div>
                     <div className="display text-xl font-semibold">{p.title}</div>

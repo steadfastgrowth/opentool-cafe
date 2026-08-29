@@ -20,7 +20,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ key: string }>
   return new Response(obj.body, {
     headers: {
       "content-type": TYPES[ext] || "application/octet-stream",
-      "cache-control": "public, max-age=86400",
+      "cache-control": "public, max-age=31536000, immutable",
     },
   });
 }

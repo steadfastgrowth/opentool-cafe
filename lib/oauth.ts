@@ -91,6 +91,12 @@ export async function finishGithub(req: NextRequest) {
   return NextResponse.redirect(new URL(await consumeNext(), origin));
 }
 
+function cafeAvatar(url: string | null | undefined) {
+  if (!url) return null;
+  if (url.startsWith("/a/")) return url;
+  return null;
+}
+
 async function upsertOAuthUser(input: {
   email: string;
   name: string;
@@ -127,7 +133,7 @@ async function upsertOAuthUser(input: {
         githubId: input.githubId || user.githubId,
         github: input.github || user.github,
         githubHandle: input.githubHandle?.toLowerCase() || user.githubHandle,
-        avatarUrl: user.avatarUrl || input.avatarUrl || undefined,
+        avatarUrl: cafeAvatar(user.avatarUrl) || input.avatarUrl || undefined,
         name: user.name || input.name,
       },
     });

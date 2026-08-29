@@ -58,9 +58,9 @@ export async function dropUnreadNotice(
 }
 
 export function noticeLine(kind: string, slug: string) {
-  if (kind === "like") return `@${slug} liked a post`;
-  if (kind === "comment") return `@${slug} commented`;
-  if (kind === "follow") return `@${slug} followed`;
+  if (kind === "like") return `@${slug} liked your post`;
+  if (kind === "comment") return `@${slug} commented on your post`;
+  if (kind === "follow") return `@${slug} followed you`;
   if (kind === "mail") return `@${slug} sent mail`;
   return `@${slug}`;
 }

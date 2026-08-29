@@ -84,7 +84,7 @@ export default async function RootLayout({
       where: { toUserId: me.id, readAt: null },
     });
     deskUnread = await prisma.notice.count({
-      where: { toUserId: me.id, readAt: null },
+      where: { toUserId: me.id, readAt: null, kind: { not: "mail" } },
     });
   }
   return (

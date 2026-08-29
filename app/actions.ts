@@ -406,13 +406,16 @@ export async function uploadAvatar(formData: FormData) {
   const { getAvatars } = await import("@/lib/r2");
   const bucket = await getAvatars();
   if (!bucket) redirect("/you?err=photo");
-  const key = `${me.id}.${kind}`;
+  const key = `${me.id}-${Date.now()}.${kind}`;
   const types = { jpg: "image/jpeg", png: "image/png", webp: "image/webp" } as const;
   await bucket.put(key, buf, { httpMetadata: { contentType: types[kind] } });
   await prisma.user.update({ where: { id: me.id }, data: { avatarUrl: `/a/${key}` } });
   revalidatePath("/you");
   revalidatePath(`/u/${me.slug}`);
-  redirect("/you");
+  revalidatePath("/");
+  revalidatePath("/people");
+  revalidatePath("/board");
+  redirect("/you?ok=photo");
 }
 
 function sniffImage(buf: Buffer): "jpg" | "png" | "webp" | null {
@@ -527,8 +530,14 @@ export async function toggleFollow(formData: FormData) {
     });
   }
   revalidatePath(`/u/${slug}`);
+  revalidatePath(`/u/${slug}/followers`);
+  revalidatePath(`/u/${slug}/following`);
+  revalidatePath(`/u/${me.slug}`);
+  revalidatePath(`/u/${me.slug}/following`);
+  revalidatePath("/people");
   revalidatePath("/board");
-  redirect(`/u/${slug}`);
+  revalidatePath("/desk");
+  revalidatePath("/");
 }
 
 export async function toggleLike(formData: FormData) {
@@ -561,7 +570,8 @@ export async function toggleLike(formData: FormData) {
   }
   revalidatePath(`/board/${post.id}`);
   revalidatePath("/board");
-  redirect(`/board/${post.id}`);
+  revalidatePath("/desk");
+  revalidatePath("/");
 }
 
 export async function addComment(formData: FormData) {
@@ -585,7 +595,8 @@ export async function addComment(formData: FormData) {
     postId: post.id,
   });
   revalidatePath(`/board/${post.id}`);
-  redirect(`/board/${post.id}`);
+  revalidatePath("/board");
+  revalidatePath("/desk");
 }
 
 export async function sendDirectMessage(formData: FormData) {
@@ -603,12 +614,6 @@ export async function sendDirectMessage(formData: FormData) {
   await prisma.directMessage.create({
     data: { fromUserId: me.id, toUserId: person.id, body },
   });
-  await pingNotice(prisma, {
-    toUserId: person.id,
-    fromUserId: me.id,
-    kind: "mail",
-    href: `/mail/${me.slug}`,
-  });
   revalidatePath("/mail");
   revalidatePath(`/mail/${slug}`);
   redirect(`/mail/${slug}`);
@@ -620,10 +625,23 @@ export async function openNotice(formData: FormData) {
   if (!me) redirect("/join");
   const id = String(formData.get("id") || "");
   const notice = await prisma.notice.findUnique({ where: { id } });
-  if (!notice || notice.toUserId !== me.id) redirect("/you");
+  if (!notice || notice.toUserId !== me.id) redirect("/desk");
   if (!notice.readAt) {
     await prisma.notice.update({ where: { id }, data: { readAt: new Date() } });
   }
-  const href = notice.href.startsWith("/") && !notice.href.startsWith("//") ? notice.href : "/you";
+  revalidatePath("/desk");
+  const href = notice.href.startsWith("/") && !notice.href.startsWith("//") ? notice.href : "/desk";
   redirect(href);
+}
+
+export async function markDeskRead() {
+  const prisma = await getPrisma();
+  const me = await getSessionUser();
+  if (!me) redirect("/join?next=/desk");
+  await prisma.notice.updateMany({
+    where: { toUserId: me.id, readAt: null, kind: { not: "mail" } },
+    data: { readAt: new Date() },
+  });
+  revalidatePath("/desk");
+  revalidatePath("/you");
 }

@@ -28,6 +28,7 @@ export async function GET(req: NextRequest) {
       where: {
         OR: [{ slug: { contains: q } }, { name: { contains: q } }, { skills: { contains: q } }],
       },
+      select: { slug: true, name: true },
       take: 24,
     }),
     prisma.listing.findMany({

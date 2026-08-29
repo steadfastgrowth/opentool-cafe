@@ -57,6 +57,7 @@ export default async function MailThreadPage({
           <p className="tty-meta">$ talk {person.slug}</p>
           <TtyLog
             slug={person.slug}
+            meSlug={me.slug}
             initial={messages.map((m: { id: string; body: string; fromUserId: string; createdAt: Date }) => ({
               id: m.id,
               body: m.body,

@@ -6,6 +6,7 @@ import { getSessionUser, padTicket } from "@/lib/auth";
 import { Avatar } from "@/components/avatar";
 import { FollowButton } from "@/components/follow-button";
 import { BookMeeting } from "@/components/book-meeting";
+import { publicPersonSelect } from "@/lib/person";
 
 function ext(href: string | null, label: string) {
   if (!href) return null;
@@ -24,7 +25,10 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const prisma = await getPrisma();
   const { slug } = await params;
-  const person = await prisma.user.findUnique({ where: { slug } });
+  const person = await prisma.user.findUnique({
+    where: { slug },
+    select: { name: true, slug: true, bio: true, offering: true },
+  });
   if (!person) return { title: "Not found · Open Tool Cafe" };
   const title = `${person.name || person.slug} · Open Tool Cafe`;
   const description = person.bio || person.offering || `Builder at Open Tool Cafe. @${person.slug}`;
@@ -43,11 +47,16 @@ export default async function ProfilePage({
   const { slug } = await params;
   const person = await prisma.user.findUnique({
     where: { slug },
-    include: {
-      listings: { orderBy: { number: "asc" } },
-      takes: { include: { listing: true }, orderBy: { createdAt: "desc" } },
-      posts: { orderBy: { createdAt: "desc" }, take: 20 },
-      _count: { select: { followers: true, following: true, posts: true, listings: true } },
+    select: {
+      ...publicPersonSelect,
+      takesMeetings: true,
+      calendarUrl: true,
+      listings: { orderBy: { number: "asc" }, select: { id: true, slug: true, number: true, name: true } },
+      takes: {
+        orderBy: { createdAt: "desc" },
+        select: { id: true, listing: { select: { slug: true, name: true } } },
+      },
+      posts: { orderBy: { createdAt: "desc" }, take: 20, select: { id: true, kind: true, title: true } },
     },
   });
   if (!person) notFound();
@@ -95,9 +104,15 @@ export default async function ProfilePage({
           {person.lookingFor && <p className="text-dim">Looking for: {person.lookingFor}</p>}
           {person.skills && <p className="font-mono text-[12px] text-mark mt-2">{person.skills}</p>}
           <p className="mt-4 font-mono text-sm">
-            <strong>{person._count.followers}</strong> followers · <strong>{person._count.following}</strong>{" "}
-            following · <strong>{person._count.posts}</strong> posts · <strong>{person._count.listings}</strong>{" "}
-            tools
+            <Link href={`/u/${person.slug}/followers`} className="no-underline">
+              <strong>{person._count.followers}</strong> followers
+            </Link>
+            {" · "}
+            <Link href={`/u/${person.slug}/following`} className="no-underline">
+              <strong>{person._count.following}</strong> following
+            </Link>
+            {" · "}
+            <strong>{person._count.posts}</strong> posts · <strong>{person._count.listings}</strong> tools
           </p>
           <div className="flex flex-wrap gap-2 mt-4">
             {ext(person.github, "GitHub")}
@@ -114,7 +129,7 @@ export default async function ProfilePage({
         <p className="text-dim">No pins yet.</p>
       ) : (
         <ul className="space-y-2 mb-10">
-          {person.posts.map((p) => (
+          {person.posts.map((p: { id: string; kind: string; title: string }) => (
             <li key={p.id}>
               <Link href={`/board/${p.id}`} className="ticket p-3 block no-underline">
                 <span className="font-mono text-[11px] text-mark">{p.kind}</span>
@@ -130,7 +145,7 @@ export default async function ProfilePage({
         <p className="text-dim">None.</p>
       ) : (
         <ul className="space-y-2 mb-10">
-          {person.listings.map((l) => (
+          {person.listings.map((l: { id: string; slug: string; number: number; name: string }) => (
             <li key={l.id}>
               <Link href={`/l/${l.slug}`} className="ticket p-3 block no-underline">
                 #{padTicket(l.number)} {l.name}
@@ -145,7 +160,7 @@ export default async function ProfilePage({
         <p className="text-dim">None.</p>
       ) : (
         <ul className="space-y-2">
-          {person.takes.map((t) => (
+          {person.takes.map((t: { id: string; listing: { slug: string; name: string } }) => (
             <li key={t.id}>
               <Link href={`/l/${t.listing.slug}`}>{t.listing.name}</Link>
             </li>
@@ -153,7 +168,10 @@ export default async function ProfilePage({
         </ul>
       )}
 
-      <BookMeeting host={person} meId={me?.id ?? null} />
+      <BookMeeting
+        host={{ id: person.id, takesMeetings: person.takesMeetings, calendarUrl: person.calendarUrl }}
+        meId={me?.id ?? null}
+      />
     </main>
   );
 }

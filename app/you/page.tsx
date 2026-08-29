@@ -2,9 +2,8 @@ import { Link } from "@/components/link";
 import { redirect } from "next/navigation";
 import { getSessionUser, padTicket } from "@/lib/auth";
 import { getPrisma } from "@/lib/db";
-import { logout, saveProfile, uploadAvatar, setPassword, openNotice } from "@/app/actions";
+import { logout, saveProfile, uploadAvatar, setPassword } from "@/app/actions";
 import { Avatar } from "@/components/avatar";
-import { noticeLine } from "@/lib/notice";
 
 export default async function YouPage({
   searchParams,
@@ -43,12 +42,6 @@ export default async function YouPage({
     where: { authorId: me.id },
     orderBy: { createdAt: "desc" },
   });
-  const notices = await prisma.notice.findMany({
-    where: { toUserId: me.id },
-    include: { fromUser: true },
-    orderBy: { createdAt: "desc" },
-    take: 40,
-  });
 
   return (
     <main className="max-w-3xl mx-auto px-5 py-10 space-y-10">
@@ -76,40 +69,32 @@ export default async function YouPage({
       </div>
       {q.ok === "meet" && <p>Meeting request stored.</p>}
       {q.ok === "password" && <p>Password saved.</p>}
+      {q.ok === "photo" && <p>Photo saved.</p>}
       {q.err === "password" && <p>Password needs at least 8 characters.</p>}
       {q.err === "photo" && <p>Photo needs to be a jpg/png/webp under 3MB.</p>}
 
       <section id="desk" className="ticket p-6">
-        <h2 className="display text-xl mb-4">Desk</h2>
-        {notices.length === 0 ? (
-          <p className="text-dim">Empty.</p>
-        ) : (
-          <ul className="space-y-2">
-            {notices.map((n: { id: string; kind: string; readAt: Date | null; fromUser: { slug: string } }) => (
-              <li key={n.id}>
-                <form action={openNotice}>
-                  <input type="hidden" name="id" value={n.id} />
-                  <button className="w-full text-left" type="submit">
-                    {noticeLine(n.kind, n.fromUser.slug)}
-                    {n.readAt ? "" : " · new"}
-                  </button>
-                </form>
-              </li>
-            ))}
-          </ul>
-        )}
+        <h2 className="display text-xl mb-2">Desk</h2>
+        <p className="text-sm text-dim mb-3">Likes, comments, and follows live on the desk now.</p>
+        <Link href="/desk" className="btn sm:w-auto no-underline">
+          Open desk
+        </Link>
       </section>
 
       <section className="ticket p-6">
         <h2 className="display text-xl mb-4">Photo</h2>
-        <p className="text-sm text-dim mb-4">Optional. Initials show until you add one.</p>
-        <form action={uploadAvatar} className="space-y-3">
+        <p className="text-sm text-dim mb-4">
+          {me.avatarUrl
+            ? "Replace anytime — including a GitHub photo. jpg, png, or webp under 3MB."
+            : "Optional. Initials show until you add one. jpg, png, or webp under 3MB."}
+        </p>
+        <form action={uploadAvatar} encType="multipart/form-data" className="space-y-3">
           <label className="lbl" htmlFor="you-photo">
             photo
           </label>
           <input id="you-photo" name="photo" type="file" accept="image/jpeg,image/png,image/webp" className="field" />
           <button className="btn sm:w-auto" type="submit">
-            Upload photo
+            {me.avatarUrl ? "Replace photo" : "Upload photo"}
           </button>
         </form>
       </section>

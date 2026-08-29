@@ -64,6 +64,7 @@ export default async function FindPage({
           </div>
         </>
       ) : null}
+      {shown.length === 0 ? <p className="text-dim mb-6">Nothing on the menu for that.</p> : null}
       <div className="grid md:grid-cols-2 gap-3">
         {shown.map((item) => (
           <Link key={item.id} href={`/l/${item.slug}`} className="ticket p-4 block no-underline">

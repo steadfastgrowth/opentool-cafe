@@ -5,6 +5,32 @@ import { menuSort } from "@/lib/menu";
 import { MoreMenu } from "@/components/more-menu";
 import { SearchBox } from "@/components/search-box";
 
+function unreadFor(href: string, mailUnread: number, deskUnread: number) {
+  if (href === "/mail") return mailUnread;
+  if (href === "/desk") return deskUnread;
+  return 0;
+}
+
+function NavLabel({
+  href,
+  label,
+  mailUnread,
+  deskUnread,
+}: {
+  href: string;
+  label: string;
+  mailUnread: number;
+  deskUnread: number;
+}) {
+  const n = unreadFor(href, mailUnread, deskUnread);
+  return (
+    <>
+      {label}
+      {n > 0 ? <span className="nav-badge">{n > 99 ? "99+" : n}</span> : null}
+    </>
+  );
+}
+
 export async function Chrome({
   signedIn,
   slug,
@@ -24,8 +50,9 @@ export async function Chrome({
     ? ([
         { href: "/find", label: "menu" },
         { href: "/board", label: "board" },
+        { href: "/people", label: "people" },
         { href: "/mail", label: "mail" },
-        { href: "/tip", label: "tip" },
+        { href: "/desk", label: "desk" },
       ] as const)
     : ([
         { href: "/find", label: "menu" },
@@ -43,7 +70,7 @@ export async function Chrome({
   const loop = [...items, ...items];
   return (
     <header className="sticky top-0 z-40">
-      <div className="nav-bar">
+      <div className={signedIn ? "nav-bar is-in" : "nav-bar"}>
         <Link href="/" className="nav-mark" aria-label="Open Tool Cafe home">
           <span className="steam">
             <b />
@@ -57,11 +84,24 @@ export async function Chrome({
             opentool.cafe
           </Link>
           <nav className="nav-links" aria-label="Primary">
-            {links.map((l) => (
-              <Link key={l.href} className={l.href === "/tip" ? "nav-link tip-nav" : "nav-link"} href={l.href}>
-                {l.href === "/mail" && mailUnread > 0 ? `mail · ${mailUnread}` : l.label}
-              </Link>
-            ))}
+            {links.map((l) => {
+              const n = unreadFor(l.href, mailUnread, deskUnread);
+              return (
+                <Link
+                  key={l.href}
+                  className={[
+                    "nav-link",
+                    l.href === "/tip" ? "tip-nav" : "",
+                    n > 0 ? "has-unread" : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                  href={l.href}
+                >
+                  <NavLabel href={l.href} label={l.label} mailUnread={mailUnread} deskUnread={deskUnread} />
+                </Link>
+              );
+            })}
           </nav>
         </div>
 
@@ -69,6 +109,18 @@ export async function Chrome({
           <div className="nav-search-wrap">
             <SearchBox id="nav-q" className="nav-search" />
           </div>
+          {signedIn ? (
+            <nav className="nav-alerts" aria-label="Inbox">
+              <Link className={mailUnread > 0 ? "nav-link has-unread" : "nav-link"} href="/mail">
+                mail
+                {mailUnread > 0 ? <span className="nav-badge">{mailUnread > 99 ? "99+" : mailUnread}</span> : null}
+              </Link>
+              <Link className={deskUnread > 0 ? "nav-link has-unread" : "nav-link"} href="/desk">
+                desk
+                {deskUnread > 0 ? <span className="nav-badge">{deskUnread > 99 ? "99+" : deskUnread}</span> : null}
+              </Link>
+            </nav>
+          ) : null}
           {signedIn && slug ? (
             <Link href={`/u/${slug}`} className="nav-avatar" aria-label="Your public profile">
               <Avatar name={name || slug} src={avatarUrl} size={32} />
@@ -79,17 +131,24 @@ export async function Chrome({
             </Link>
           )}
           <MoreMenu>
-            {links.map((l) => (
-              <Link key={l.href} className="nav-link py-2" href={l.href}>
-                {l.href === "/mail" && mailUnread > 0 ? `mail · ${mailUnread}` : l.label}
-              </Link>
-            ))}
+            {links.map((l) => {
+              const n = unreadFor(l.href, mailUnread, deskUnread);
+              return (
+                <Link
+                  key={l.href}
+                  className={["nav-link py-2", n > 0 ? "has-unread" : ""].filter(Boolean).join(" ")}
+                  href={l.href}
+                >
+                  <NavLabel href={l.href} label={l.label} mailUnread={mailUnread} deskUnread={deskUnread} />
+                </Link>
+              );
+            })}
             <Link className="nav-link py-2" href="/search">
               search
             </Link>
-            {signedIn && slug ? (
-              <Link className="nav-link py-2" href="/you#desk">
-                {deskUnread > 0 ? `desk · ${deskUnread}` : "desk"}
+            {signedIn ? (
+              <Link className="nav-link py-2 tip-nav" href="/tip">
+                tip
               </Link>
             ) : null}
             {signedIn && slug ? (

@@ -4,7 +4,7 @@ import { getPrisma } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth";
 
 function hhmm(d: Date) {
-  return d.toISOString().slice(11, 16);
+  return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
 }
 
 export default async function MailPage() {
@@ -57,9 +57,12 @@ export default async function MailPage() {
             </p>
           ) : (
             threads.map((t) => (
-              <Link key={t.slug} href={`/mail/${t.slug}`} className="tty-row">
+              <Link key={t.slug} href={`/mail/${t.slug}`} className={t.unread > 0 ? "tty-row unread" : "tty-row"}>
                 <span className="tty-time">{hhmm(t.at)}</span>
-                <span className="tty-who">{t.unread > 0 ? `*${t.slug}` : t.slug}</span>
+                <span className="tty-who">
+                  {t.slug}
+                  {t.unread > 0 ? ` · ${t.unread} new` : ""}
+                </span>
                 <span className="tty-body">{t.preview}</span>
               </Link>
             ))

@@ -1,9 +1,11 @@
 import { Link } from "@/components/link";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { getPrisma } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth";
 import { addComment, deletePost, toggleLike } from "@/app/actions";
 import { Avatar } from "@/components/avatar";
+import { publicAuthorSelect } from "@/lib/person";
+import { ago } from "@/lib/time";
 
 export default async function PostPage({
   params,
@@ -18,9 +20,12 @@ export default async function PostPage({
   const post = await prisma.post.findUnique({
     where: { id },
     include: {
-      author: true,
-      likes: true,
-      comments: { include: { user: true }, orderBy: { createdAt: "asc" } },
+      author: { select: publicAuthorSelect },
+      likes: { select: { userId: true } },
+      comments: {
+        include: { user: { select: publicAuthorSelect } },
+        orderBy: { createdAt: "asc" },
+      },
     },
   });
   if (!post) notFound();
@@ -42,6 +47,10 @@ export default async function PostPage({
           <Link href={`/u/${post.author.slug}`} className="display text-xl">
             {post.author.name || post.author.slug}
           </Link>
+          <p className="font-mono text-[11px] text-dim">
+            @{post.author.slug} ·{" "}
+            <time dateTime={post.createdAt.toISOString()}>{ago(post.createdAt)}</time>
+          </p>
           {post.author.offering && <p className="text-sm text-dim">{post.author.offering}</p>}
         </div>
       </div>

@@ -6,7 +6,8 @@ type Row = { id: string; body: string; from: string; at: string };
 
 function hhmm(iso: string) {
   try {
-    return new Date(iso).toISOString().slice(11, 16);
+    const d = new Date(iso);
+    return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
   } catch {
     return "";
   }
@@ -19,9 +20,11 @@ function pinBottom() {
 
 export function TtyLog({
   slug,
+  meSlug,
   initial,
 }: {
   slug: string;
+  meSlug: string;
   initial: Row[];
 }) {
   const [rows, setRows] = useState(initial);
@@ -52,9 +55,9 @@ export function TtyLog({
     <>
       {rows.length === 0 && <p className="tty-meta">no traffic yet.</p>}
       {rows.map((m) => (
-        <p key={m.id} className="tty-line">
+        <p key={m.id} className={`tty-line ${m.from === meSlug ? "mine" : "theirs"}`}>
           <span className="tty-time">{hhmm(m.at)}</span>
-          <span className="tty-who">{m.from}&gt;</span>
+          <span className="tty-who">{m.from === meSlug ? "you" : m.from}&gt;</span>
           <span className="tty-body">{m.body}</span>
         </p>
       ))}

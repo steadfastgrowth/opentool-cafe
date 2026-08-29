@@ -2,8 +2,19 @@ import { Link } from "@/components/link";
 import { getPrisma } from "@/lib/db";
 import { padTicket, tagList, getSessionUser } from "@/lib/auth";
 import { Stage } from "@/components/stage";
-
+import { FeedList, postToFeed } from "@/components/feed";
+import { postCardSelect } from "@/lib/person";
 import { menuSort } from "@/lib/menu";
+
+type MenuItem = {
+  id: string;
+  slug: string;
+  number: number;
+  name: string;
+  oneLiner: string;
+  claimed: boolean;
+  tags: string;
+};
 
 const PREVIEW = 6;
 
@@ -16,32 +27,27 @@ export default async function Home() {
       where: { followerId: me.id },
       select: { followingId: true },
     });
-    const ids = follows.map((f) => f.followingId);
-    const authorFilter = ids.length ? { authorId: { in: ids } } : undefined;
+    const ids = follows.map((f: { followingId: string }) => f.followingId);
 
-    const [followedPosts, extraPosts, tools] = await Promise.all([
+    const [followedPosts, latestPosts, tools] = await Promise.all([
+      ids.length
+        ? prisma.post.findMany({
+            where: { authorId: { in: ids } },
+            orderBy: { createdAt: "desc" },
+            select: postCardSelect,
+            take: PREVIEW,
+          })
+        : Promise.resolve([]),
       prisma.post.findMany({
-        where: authorFilter,
         orderBy: { createdAt: "desc" },
-        include: { author: true },
-        take: PREVIEW,
-      }),
-      prisma.post.findMany({
-        orderBy: { createdAt: "desc" },
-        include: { author: true },
+        select: postCardSelect,
         take: PREVIEW,
       }),
       prisma.listing.findMany({ take: 80 }),
     ]);
-
-    const seen = new Set<string>();
-    const posts = [];
-    for (const p of [...followedPosts, ...extraPosts]) {
-      if (seen.has(p.id)) continue;
-      seen.add(p.id);
-      posts.push(p);
-    }
-    const menu = menuSort(tools).slice(0, PREVIEW);
+    const fromFollows = ids.length > 0;
+    const posts = fromFollows ? followedPosts : latestPosts;
+    const menu = menuSort(tools as MenuItem[]).slice(0, PREVIEW);
 
     return (
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8 boot">
@@ -62,23 +68,37 @@ export default async function Home() {
                   Post
                 </Link>
               </div>
+              <p className="font-mono text-[11px] text-dim uppercase tracking-widest mb-4">
+                {fromFollows ? "From people you follow" : "Latest on the board"}
+              </p>
               {posts.length === 0 ? (
-                <p className="text-dim">Quiet. Pin something.</p>
+                fromFollows ? (
+                  <p className="text-dim">
+                    Quiet from your table. <Link href="/people">Find people</Link> or{" "}
+                    <Link href="/board">see the latest</Link>.
+                  </p>
+                ) : (
+                  <p className="text-dim">
+                    Quiet. Pin something, or <Link href="/people">follow someone</Link>.
+                  </p>
+                )
               ) : (
-                <div className="grid gap-3">
-                  {posts.slice(0, PREVIEW).map((p) => (
-                    <Link key={p.id} href={`/board/${p.id}`} className="ticket p-4 block no-underline">
-                      <div className="font-mono text-[11px] text-dim">{p.kind}</div>
-                      <div className="display text-xl font-semibold">{p.title}</div>
-                      <p className="text-sm mt-1 text-dim line-clamp-2">{p.body}</p>
-                      <p className="font-mono text-[11px] text-mark mt-2">@{p.author.slug}</p>
-                    </Link>
-                  ))}
-                </div>
+                <FeedList items={posts.map(postToFeed)} />
               )}
-              <Link href="/board" className="btn mt-6 no-underline sm:w-auto">
-                Full board
-              </Link>
+              <div className="flex flex-col sm:flex-row gap-3 mt-6">
+                <Link href="/board" className="btn no-underline sm:w-auto">
+                  Full board
+                </Link>
+                {fromFollows ? (
+                  <Link href="/board?feed=following" className="btn btn-ghost no-underline sm:w-auto">
+                    Following
+                  </Link>
+                ) : (
+                  <Link href="/people" className="btn btn-ghost no-underline sm:w-auto">
+                    People
+                  </Link>
+                )}
+              </div>
             </div>
           </div>
 
@@ -125,7 +145,7 @@ export default async function Home() {
     );
   }
 
-  const board = menuSort(await prisma.listing.findMany()).slice(0, PREVIEW);
+  const board = menuSort((await prisma.listing.findMany()) as MenuItem[]).slice(0, PREVIEW);
   return (
     <Stage label="Front of house">
       <p className="display text-[12px] tracking-[0.22em] text-mark mb-4">OPEN TOOL CAFE</p>

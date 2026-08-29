@@ -25,6 +25,9 @@ cp .env.example .env
 npm install
 npx prisma generate
 npx wrangler d1 execute opentool-cafe --remote --file prisma/d1-ratelimit.sql
+npx wrangler d1 execute opentool-cafe --remote --file prisma/d1-follow.sql
+npx wrangler d1 execute opentool-cafe --remote --file prisma/d1-notices.sql
+npx wrangler d1 execute opentool-cafe --remote --file prisma/d1-community.sql
 npx opennextjs-cloudflare build
 npx opennextjs-cloudflare deploy
 ```

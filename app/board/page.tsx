@@ -2,6 +2,8 @@ import { Link } from "@/components/link";
 import { getPrisma } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth";
 import { Stage } from "@/components/stage";
+import { FeedList, postToFeed } from "@/components/feed";
+import { postCardSelect } from "@/lib/person";
 
 const KINDS = [
   { id: "all", label: "all" },
@@ -14,17 +16,36 @@ const KINDS = [
 export default async function BoardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ kind?: string }>;
+  searchParams: Promise<{ kind?: string; feed?: string }>;
 }) {
   const prisma = await getPrisma();
-  const { kind } = await searchParams;
+  const { kind, feed } = await searchParams;
   const me = await getSessionUser();
-  const posts = await prisma.post.findMany({
-    where: kind && kind !== "all" ? { kind } : undefined,
-    orderBy: { createdAt: "desc" },
-    include: { author: true, _count: { select: { likes: true, comments: true } } },
-    take: 80,
-  });
+  const followingFeed = Boolean(me && feed === "following");
+
+  let authorFilter: { authorId: { in: string[] } } | undefined;
+  if (followingFeed && me) {
+    const follows = await prisma.follow.findMany({
+      where: { followerId: me.id },
+      select: { followingId: true },
+    });
+    const ids = follows.map((f: { followingId: string }) => f.followingId);
+    authorFilter = ids.length ? { authorId: { in: ids } } : { authorId: { in: [] } };
+  }
+
+  const posts =
+    followingFeed && authorFilter?.authorId.in.length === 0
+      ? []
+      : await prisma.post.findMany({
+          where: {
+            ...(kind && kind !== "all" ? { kind } : {}),
+            ...(authorFilter || {}),
+          },
+          orderBy: { createdAt: "desc" },
+          select: postCardSelect,
+          take: 80,
+        });
+
   return (
     <Stage label="The board">
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
@@ -39,32 +60,45 @@ export default async function BoardPage({
           </Link>
         )}
       </div>
-      <div className="flex flex-wrap gap-2 mb-8">
-        {KINDS.map((k) => (
+      {me ? (
+        <div className="flex flex-wrap gap-2 mb-4">
+          <Link href={kind && kind !== "all" ? `/board?kind=${kind}` : "/board"} className="font-mono text-[11px] border border-line px-2 py-1">
+            latest
+          </Link>
           <Link
-            key={k.id}
-            href={k.id === "all" ? "/board" : `/board?kind=${k.id}`}
+            href={kind && kind !== "all" ? `/board?feed=following&kind=${kind}` : "/board?feed=following"}
             className="font-mono text-[11px] border border-line px-2 py-1"
           >
-            {k.label}
+            following
           </Link>
-        ))}
+        </div>
+      ) : null}
+      <div className="flex flex-wrap gap-2 mb-8">
+        {KINDS.map((k) => {
+          const params = new URLSearchParams();
+          if (followingFeed) params.set("feed", "following");
+          if (k.id !== "all") params.set("kind", k.id);
+          const qs = params.toString();
+          return (
+            <Link
+              key={k.id}
+              href={qs ? `/board?${qs}` : "/board"}
+              className="font-mono text-[11px] border border-line px-2 py-1"
+            >
+              {k.label}
+            </Link>
+          );
+        })}
       </div>
-      {posts.length === 0 && <p className="text-dim">Empty board. First pin wins.</p>}
-      <div className="grid md:grid-cols-2 gap-3">
-        {posts.map((p) => (
-          <Link key={p.id} href={`/board/${p.id}`} className="ticket p-4 block no-underline">
-            <div className="font-mono text-[11px] text-dim">{p.kind}</div>
-            <div className="display text-xl font-semibold">{p.title}</div>
-            <p className="text-sm mt-1 text-dim line-clamp-2">{p.body}</p>
-            <p className="font-mono text-[11px] text-mark mt-2">
-              @{p.author.slug}
-              {p.tags ? ` · ${p.tags}` : ""}
-              {` · ${p._count.likes} likes · ${p._count.comments} comments`}
-            </p>
-          </Link>
-        ))}
-      </div>
+      {posts.length === 0 && followingFeed ? (
+        <p className="text-dim">
+          Follow someone, then their pins land here. <Link href="/people">People</Link>
+        </p>
+      ) : posts.length === 0 ? (
+        <p className="text-dim">Empty board. First pin wins.</p>
+      ) : (
+        <FeedList items={posts.map(postToFeed)} />
+      )}
     </Stage>
   );
 }
