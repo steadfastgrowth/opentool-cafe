@@ -318,6 +318,55 @@ select {
   box-shadow: none;
 }
 
+.people-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+@media (min-width: 768px) {
+  .people-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.person-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.75rem;
+  align-items: start;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.person-avatar {
+  flex-shrink: 0;
+}
+
+.person-meta {
+  min-width: 0;
+}
+
+.person-meta .display {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.follow-form {
+  margin: 0;
+  flex: 0 0 auto;
+  width: auto;
+  min-width: 0;
+  align-self: start;
+  justify-self: end;
+}
+
+.follow-btn {
+  width: auto;
+  white-space: nowrap;
+}
+
 .receipt {
   background: repeating-linear-gradient(
     90deg,
@@ -718,9 +767,27 @@ label.lbl {
     width: 100%;
   }
 
+  .person-row {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .person-row .follow-form {
+    grid-column: 1 / -1;
+    justify-self: stretch;
+  }
+
+  .person-row .follow-btn {
+    width: 100%;
+    padding: 0.45rem 0.7rem;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+  }
+
   .stage {
     border-left: 0;
     border-right: 0;
+    min-width: 0;
+    overflow-x: hidden;
   }
 
   .tty-screen {

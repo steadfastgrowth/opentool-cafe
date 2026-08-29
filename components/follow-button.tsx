@@ -8,9 +8,9 @@ export function FollowButton({
   following: boolean;
 }) {
   return (
-    <form action={toggleFollow}>
+    <form action={toggleFollow} className="follow-form">
       <input type="hidden" name="slug" value={slug} />
-      <button className={following ? "btn btn-ghost sm:w-auto" : "btn sm:w-auto"} type="submit">
+      <button className={following ? "btn btn-ghost follow-btn" : "btn follow-btn"} type="submit">
         {following ? "Following" : "Follow"}
       </button>
     </form>
