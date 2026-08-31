@@ -6,7 +6,7 @@ import { getSessionUser, padTicket } from "@/lib/auth";
 import { Avatar } from "@/components/avatar";
 import { FollowButton } from "@/components/follow-button";
 import { BookMeeting } from "@/components/book-meeting";
-import { FoundingStar } from "@/components/founding-star";
+import { FoundingBadge } from "@/components/founding-badge";
 import { publicPersonSelect } from "@/lib/person";
 
 function ext(href: string | null, label: string) {
@@ -80,7 +80,7 @@ export default async function ProfilePage({
             <div>
               <h1 className="display text-4xl sm:text-5xl inline-flex items-center gap-2 flex-wrap">
                 {person.name || person.slug}
-                {person.founding ? <FoundingStar /> : null}
+                {person.founding ? <FoundingBadge n={person.memberNumber} /> : null}
               </h1>
               <p className="font-mono text-dim mt-1">@{person.slug}</p>
             </div>

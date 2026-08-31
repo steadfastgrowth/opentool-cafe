@@ -18,7 +18,7 @@ import { hashPassword, sixDigitCode, verifyPassword } from "@/lib/password";
 import { track } from "@/lib/track";
 import { clientIp } from "@/lib/request";
 import { rateLimit, WINDOW_15M } from "@/lib/rate-limit";
-import { takeFoundingSeat } from "@/lib/founding";
+import { nextMemberSeat } from "@/lib/founding";
 import { bookingUrl, parseHttpUrl } from "@/lib/urls";
 import { notifyDesk } from "@/lib/notify";
 import { dropUnreadNotice, pingNotice } from "@/lib/notice";
@@ -102,13 +102,16 @@ export async function consumeMagic(token: string, _ignoredOpt?: boolean) {
   let user = await prisma.user.findUnique({ where: { email: row.email } });
   if (!user) {
     const local = row.email.split("@")[0];
+    const slug = await uniqueUserSlug(local);
+    const seat = await nextMemberSeat(prisma, slug);
     user = await prisma.user.create({
       data: {
         email: row.email,
-        slug: await uniqueUserSlug(local),
+        slug,
         name: local,
         optInBuilders: useOpt,
-        founding: await takeFoundingSeat(prisma),
+        founding: seat.founding,
+        memberNumber: seat.memberNumber,
       },
     });
     await notifyDesk(
@@ -146,14 +149,17 @@ export async function registerWithPassword(formData: FormData) {
   }
   const passwordHash = await hashPassword(password);
   const local = email.split("@")[0];
+  const slug = await uniqueUserSlug(local);
+  const seat = await nextMemberSeat(prisma, slug);
   const user = await prisma.user.create({
     data: {
       email,
-      slug: await uniqueUserSlug(local),
+      slug,
       name: local,
       passwordHash,
       optInBuilders,
-      founding: await takeFoundingSeat(prisma),
+      founding: seat.founding,
+      memberNumber: seat.memberNumber,
     },
   });
   await notifyDesk(

@@ -32,6 +32,7 @@ model User {
   takesMeetings Boolean  @default(false)
   calendarUrl   String?
   founding      Boolean  @default(false)
+  memberNumber  Int?     @unique
   createdAt     DateTime @default(now())
 
   sessions     Session[]

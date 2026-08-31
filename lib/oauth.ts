@@ -6,7 +6,7 @@ import { appUrl } from "@/lib/config";
 import { track } from "@/lib/track";
 import { cookieSecure } from "@/lib/request";
 import { notifyDesk } from "@/lib/notify";
-import { takeFoundingSeat } from "@/lib/founding";
+import { nextMemberSeat } from "@/lib/founding";
 
 const STATE = "oauth_state";
 
@@ -112,16 +112,19 @@ async function upsertOAuthUser(input: {
   let user = await prisma.user.findUnique({ where: { email } });
   if (!user && input.githubId) user = await prisma.user.findUnique({ where: { githubId: input.githubId } });
   if (!user) {
+    const slug = await uniqueUserSlug(input.slugBase);
+    const seat = await nextMemberSeat(prisma, slug);
     user = await prisma.user.create({
       data: {
         email,
         name: input.name,
-        slug: await uniqueUserSlug(input.slugBase),
+        slug,
         githubId: input.githubId,
         github: input.github,
         githubHandle: input.githubHandle?.toLowerCase(),
         avatarUrl: input.avatarUrl || undefined,
-        founding: await takeFoundingSeat(prisma),
+        founding: seat.founding,
+        memberNumber: seat.memberNumber,
       },
     });
     await notifyDesk(

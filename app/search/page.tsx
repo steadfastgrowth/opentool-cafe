@@ -4,7 +4,7 @@ import { padTicket } from "@/lib/auth";
 import { Avatar } from "@/components/avatar";
 import { Stage } from "@/components/stage";
 import { SearchBox } from "@/components/search-box";
-import { FoundingStar } from "@/components/founding-star";
+import { FoundingBadge } from "@/components/founding-badge";
 import { publicAuthorSelect, publicPersonSelect, type PublicPerson } from "@/lib/person";
 
 export default async function SearchPage({
@@ -71,7 +71,7 @@ export default async function SearchPage({
                     <div>
                       <div className="display text-xl font-semibold inline-flex items-center gap-1.5">
                         {p.name || p.slug}
-                        {p.founding ? <FoundingStar compact /> : null}
+                        {p.founding ? <FoundingBadge n={p.memberNumber} compact /> : null}
                       </div>
                       <p className="font-mono text-[11px] text-mark">@{p.slug}</p>
                     </div>

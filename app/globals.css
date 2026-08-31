@@ -499,31 +499,34 @@ label.lbl {
   text-decoration: none;
 }
 
-.founding-star {
+.founding-badge {
   display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
   vertical-align: middle;
   flex-shrink: 0;
 }
 
-.founding-star-glyph {
-  color: var(--color-amber);
-  font-size: 0.85em;
-  line-height: 1;
-  text-shadow: 0 0 1px #8a5a00;
-}
-
-.founding-star-label {
+.founding-badge-face {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 3.15rem;
+  height: 1.4rem;
+  padding: 0 0.4rem;
   font-family: var(--font-mono);
   font-size: 11px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: #8a5a00;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #2a160c;
+  background: linear-gradient(180deg, #ffe08a 0%, #f0b429 48%, #c98a12 100%);
+  border: 2px solid #2a160c;
+  box-shadow: inset 0 1px 0 #fff6c8, 2px 2px 0 #2a160c;
 }
 
-.founding-star-sm .founding-star-glyph {
-  font-size: 1rem;
+.founding-badge-sm .founding-badge-face {
+  min-width: 2.7rem;
+  height: 1.2rem;
+  font-size: 10px;
+  box-shadow: inset 0 1px 0 #fff6c8, 1px 1px 0 #2a160c;
 }
 
 .line-clamp-2 {

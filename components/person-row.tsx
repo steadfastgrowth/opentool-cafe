@@ -2,14 +2,14 @@ import { Link } from "@/components/link";
 import { Avatar } from "@/components/avatar";
 import { FollowButton } from "@/components/follow-button";
 import type { PublicPerson } from "@/lib/person";
-import { FoundingStar } from "@/components/founding-star";
+import { FoundingBadge } from "@/components/founding-badge";
 
 export function PersonRow({
   person,
   following,
   meId,
 }: {
-  person: Pick<PublicPerson, "id" | "slug" | "name" | "bio" | "avatarUrl" | "founding" | "_count">;
+  person: Pick<PublicPerson, "id" | "slug" | "name" | "bio" | "avatarUrl" | "founding" | "memberNumber" | "_count">;
   following: boolean;
   meId: string | null;
 }) {
@@ -23,7 +23,7 @@ export function PersonRow({
         <div className="min-w-0 flex-1">
           <Link href={`/u/${person.slug}`} className="display text-xl font-semibold no-underline inline-flex items-center gap-1.5 min-w-0">
             <span className="min-w-0 truncate">{person.name || person.slug}</span>
-            {person.founding ? <FoundingStar compact /> : null}
+            {person.founding ? <FoundingBadge n={person.memberNumber} compact /> : null}
           </Link>
           <p className="font-mono text-[11px] text-mark">@{person.slug}</p>
           {person.bio ? <p className="text-sm mt-1 text-dim line-clamp-2">{person.bio}</p> : null}

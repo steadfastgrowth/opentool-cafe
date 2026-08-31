@@ -29,7 +29,7 @@ export default async function JoinPage({
   return (
     <Stage label="Join" wide={false}>
       <h1 className="display text-4xl mb-3">Join the cafe</h1>
-      <p className="text-dim mb-6">GitHub, or email with a password you confirm. First 100 regulars get a gold star.</p>
+      <p className="text-dim mb-6">GitHub, or email with a password you confirm. First 100 regulars get a numbered badge.</p>
       {err && (
         <p className="text-sm mb-3" style={{ color: "var(--bad)" }}>
           {err}

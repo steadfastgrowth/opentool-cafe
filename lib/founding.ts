@@ -1,8 +1,20 @@
+export const HOST_SLUG = "steadfast";
 export const FOUNDING_LIMIT = 100;
 
-export async function takeFoundingSeat(prisma: {
-  user: { count: (args: { where: { founding: boolean } }) => Promise<number> };
-}): Promise<boolean> {
-  const taken = await prisma.user.count({ where: { founding: true } });
-  return taken < FOUNDING_LIMIT;
+export function padMember(n: number) {
+  return String(n).padStart(3, "0");
+}
+
+export async function nextMemberSeat(
+  prisma: {
+    user: {
+      aggregate: (args: { _max: { memberNumber: true } }) => Promise<{ _max: { memberNumber: number | null } }>;
+    };
+  },
+  slug: string,
+): Promise<{ founding: boolean; memberNumber: number | null }> {
+  if (slug === HOST_SLUG) return { founding: true, memberNumber: null };
+  const agg = await prisma.user.aggregate({ _max: { memberNumber: true } });
+  const n = (agg._max.memberNumber || 0) + 1;
+  return { founding: n <= FOUNDING_LIMIT, memberNumber: n };
 }
