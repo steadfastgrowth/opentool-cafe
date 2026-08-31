@@ -55,7 +55,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
           ) : null}
         </div>
         <div style={{ display: "flex", fontSize: 28, marginTop: 20, color: "#4a3224" }}>
-          {person?.founding ? (n != null ? `Regular #${padMember(n)}.` : "House.") : "Builder at the cafe."}
+          {person?.founding ? (n === 0 ? "House #000." : n != null ? `Regular #${padMember(n)}.` : "House.") : "Builder at the cafe."}
         </div>
       </div>
     ),

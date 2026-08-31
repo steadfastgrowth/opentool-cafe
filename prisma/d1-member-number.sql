@@ -1,11 +1,11 @@
--- Numbered retro badges. @steadfast is house (blank). Count starts after him.
+-- Numbered retro badges. @steadfast is #000. Count starts at #001 after him.
 ALTER TABLE User ADD COLUMN memberNumber INTEGER;
 
 CREATE UNIQUE INDEX IF NOT EXISTS User_memberNumber_key ON User(memberNumber);
 
 UPDATE User SET founding = 0, memberNumber = NULL;
 
-UPDATE User SET founding = 1 WHERE slug = 'steadfast';
+UPDATE User SET founding = 1, memberNumber = 0 WHERE slug = 'steadfast';
 
 UPDATE User
 SET memberNumber = (
@@ -19,4 +19,3 @@ SET memberNumber = (
 WHERE slug != 'steadfast';
 
 UPDATE User SET founding = 1 WHERE memberNumber IS NOT NULL AND memberNumber <= 100;
-UPDATE User SET founding = 1 WHERE slug = 'steadfast';
