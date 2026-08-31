@@ -31,6 +31,7 @@ model User {
   optInBuilders Boolean  @default(false)
   takesMeetings Boolean  @default(false)
   calendarUrl   String?
+  founding      Boolean  @default(false)
   createdAt     DateTime @default(now())
 
   sessions     Session[]

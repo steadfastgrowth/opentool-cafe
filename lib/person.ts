@@ -14,6 +14,7 @@ export const publicPersonSelect = {
   linkedin: true,
   website: true,
   createdAt: true,
+  founding: true,
   _count: { select: { followers: true, following: true, posts: true, listings: true } },
 } as const;
 
@@ -24,6 +25,7 @@ export const publicAuthorSelect = {
   name: true,
   avatarUrl: true,
   offering: true,
+  founding: true,
 } as const;
 
 export const postCardSelect = {
@@ -52,6 +54,7 @@ export type PublicPerson = {
   linkedin: string | null;
   website: string | null;
   createdAt: Date;
+  founding: boolean;
   _count: { followers: number; following: number; posts: number; listings: number };
 };
 
@@ -61,4 +64,5 @@ export type PublicAuthor = {
   name: string | null;
   avatarUrl: string | null;
   offering: string | null;
+  founding: boolean;
 };

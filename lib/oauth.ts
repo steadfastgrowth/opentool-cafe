@@ -6,6 +6,7 @@ import { appUrl } from "@/lib/config";
 import { track } from "@/lib/track";
 import { cookieSecure } from "@/lib/request";
 import { notifyDesk } from "@/lib/notify";
+import { takeFoundingSeat } from "@/lib/founding";
 
 const STATE = "oauth_state";
 
@@ -120,6 +121,7 @@ async function upsertOAuthUser(input: {
         github: input.github,
         githubHandle: input.githubHandle?.toLowerCase(),
         avatarUrl: input.avatarUrl || undefined,
+        founding: await takeFoundingSeat(prisma),
       },
     });
     await notifyDesk(

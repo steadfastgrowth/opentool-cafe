@@ -6,6 +6,7 @@ import { getSessionUser, padTicket } from "@/lib/auth";
 import { Avatar } from "@/components/avatar";
 import { FollowButton } from "@/components/follow-button";
 import { BookMeeting } from "@/components/book-meeting";
+import { FoundingStar } from "@/components/founding-star";
 import { publicPersonSelect } from "@/lib/person";
 
 function ext(href: string | null, label: string) {
@@ -77,7 +78,10 @@ export default async function ProfilePage({
           <Avatar name={person.name || person.slug} src={person.avatarUrl} size={112} />
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mt-4">
             <div>
-              <h1 className="display text-4xl sm:text-5xl">{person.name || person.slug}</h1>
+              <h1 className="display text-4xl sm:text-5xl inline-flex items-center gap-2 flex-wrap">
+                {person.name || person.slug}
+                {person.founding ? <FoundingStar /> : null}
+              </h1>
               <p className="font-mono text-dim mt-1">@{person.slug}</p>
             </div>
             <div className="flex gap-2">

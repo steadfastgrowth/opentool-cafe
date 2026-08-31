@@ -4,6 +4,7 @@ import { padTicket } from "@/lib/auth";
 import { Avatar } from "@/components/avatar";
 import { Stage } from "@/components/stage";
 import { SearchBox } from "@/components/search-box";
+import { FoundingStar } from "@/components/founding-star";
 import { publicAuthorSelect, publicPersonSelect, type PublicPerson } from "@/lib/person";
 
 export default async function SearchPage({
@@ -68,7 +69,10 @@ export default async function SearchPage({
                   <Link key={p.id} href={`/u/${p.slug}`} className="ticket p-4 flex gap-3 no-underline items-center">
                     <Avatar name={p.name || p.slug} src={p.avatarUrl} size={44} />
                     <div>
-                      <div className="display text-xl font-semibold">{p.name || p.slug}</div>
+                      <div className="display text-xl font-semibold inline-flex items-center gap-1.5">
+                        {p.name || p.slug}
+                        {p.founding ? <FoundingStar compact /> : null}
+                      </div>
                       <p className="font-mono text-[11px] text-mark">@{p.slug}</p>
                     </div>
                   </Link>

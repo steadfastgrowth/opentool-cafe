@@ -18,6 +18,7 @@ import { hashPassword, sixDigitCode, verifyPassword } from "@/lib/password";
 import { track } from "@/lib/track";
 import { clientIp } from "@/lib/request";
 import { rateLimit, WINDOW_15M } from "@/lib/rate-limit";
+import { takeFoundingSeat } from "@/lib/founding";
 import { bookingUrl, parseHttpUrl } from "@/lib/urls";
 import { notifyDesk } from "@/lib/notify";
 import { dropUnreadNotice, pingNotice } from "@/lib/notice";
@@ -107,6 +108,7 @@ export async function consumeMagic(token: string, _ignoredOpt?: boolean) {
         slug: await uniqueUserSlug(local),
         name: local,
         optInBuilders: useOpt,
+        founding: await takeFoundingSeat(prisma),
       },
     });
     await notifyDesk(
@@ -151,6 +153,7 @@ export async function registerWithPassword(formData: FormData) {
       name: local,
       passwordHash,
       optInBuilders,
+      founding: await takeFoundingSeat(prisma),
     },
   });
   await notifyDesk(

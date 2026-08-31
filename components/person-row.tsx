@@ -2,13 +2,14 @@ import { Link } from "@/components/link";
 import { Avatar } from "@/components/avatar";
 import { FollowButton } from "@/components/follow-button";
 import type { PublicPerson } from "@/lib/person";
+import { FoundingStar } from "@/components/founding-star";
 
 export function PersonRow({
   person,
   following,
   meId,
 }: {
-  person: Pick<PublicPerson, "id" | "slug" | "name" | "bio" | "avatarUrl" | "_count">;
+  person: Pick<PublicPerson, "id" | "slug" | "name" | "bio" | "avatarUrl" | "founding" | "_count">;
   following: boolean;
   meId: string | null;
 }) {
@@ -20,8 +21,9 @@ export function PersonRow({
           <Avatar name={person.name || person.slug} src={person.avatarUrl} size={56} />
         </Link>
         <div className="min-w-0 flex-1">
-          <Link href={`/u/${person.slug}`} className="display text-xl font-semibold no-underline">
-            {person.name || person.slug}
+          <Link href={`/u/${person.slug}`} className="display text-xl font-semibold no-underline inline-flex items-center gap-1.5 min-w-0">
+            <span className="min-w-0 truncate">{person.name || person.slug}</span>
+            {person.founding ? <FoundingStar compact /> : null}
           </Link>
           <p className="font-mono text-[11px] text-mark">@{person.slug}</p>
           {person.bio ? <p className="text-sm mt-1 text-dim line-clamp-2">{person.bio}</p> : null}

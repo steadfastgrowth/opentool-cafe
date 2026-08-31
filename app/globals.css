@@ -499,6 +499,33 @@ label.lbl {
   text-decoration: none;
 }
 
+.founding-star {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+.founding-star-glyph {
+  color: var(--color-amber);
+  font-size: 0.85em;
+  line-height: 1;
+  text-shadow: 0 0 1px #8a5a00;
+}
+
+.founding-star-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #8a5a00;
+}
+
+.founding-star-sm .founding-star-glyph {
+  font-size: 1rem;
+}
+
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
